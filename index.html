@@ -1,1162 +1,2993 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>원자의 구조 탐구 - 보어의 원자 모형</title>
-    <style>
-        /* 기본 테마 및 색상 변수 */
-        :root {
-            --bg-color: #1a237e;
-            --panel-bg: rgba(255, 255, 255, 0.08);
-            --text-color: #ffffff;
-            --accent-color: #4fc3f7;
-            --nucleus-color: #e53935;
-            --electron-color: #2196f3;
-            --border-color: rgba(255, 255, 255, 0.2);
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>송쌤과학 가상실험실 | 원자의 구조</title>
+<meta name="description" content="양성자·중성자·전자를 직접 조절해 원자를 만들고, 원자핵으로 합쳐 보고, 주기율표 1~30번과 이온까지 다루는 중학교 2학년 가상실험실 [9과11-02~04]">
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="27" cy="30" r="11" fill="%23e2483b"/><circle cx="38" cy="35" r="9" fill="%238fa6b8"/><circle cx="52" cy="14" r="6" fill="%233fa9f5"/></svg>'>
+<style>
+/* =====================================================================
+   디자인 토큰 — 색·간격·반지름·그림자·모션을 전부 변수로 선언한다
+   팔레트 유래
+     · 양성자 #E2483B  수소 방전관의 붉은 발광(H-alpha 656 nm)
+     · 중성자 #8FA6B8  전하를 띠지 않는 입자 → 채도를 뺀 회청색
+     · 전자   #3FA9F5  수은등 청색 방전
+     · 배경   #0B1420  안개상자(cloud chamber) 사진의 검푸른 어둠
+     · 강조   #F0B429  교과서 주기율표 원소 카드의 노란 강조
+   ===================================================================== */
+:root{
+  --bg:#0b1420; --bg-2:#0f1b29; --panel:#132133; --panel-2:#182b40;
+  --line:#22344a; --line-2:#31485f;
+  --ink:#e8f0f8; --ink-2:#a6bace; --ink-3:#6e869e;
 
-        body {
-            font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
-            background-color: var(--bg-color);
-            background-image: radial-gradient(circle at center, #283593 0%, #1a237e 100%);
-            color: var(--text-color);
-            overflow-x: hidden;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+  --p:#e2483b;  --p-lo:#ff8b7e;  --p-hi:#8e1d14;  --p-soft:#3a1a17;
+  --n:#8fa6b8;  --n-lo:#d3e0ea;  --n-hi:#55697c;  --n-soft:#1e2c39;
+  --e:#3fa9f5;  --e-lo:#a5d9ff;  --e-hi:#14568f;  --e-soft:#12293f;
+  --gold:#f0b429; --gold-soft:#38290b;
 
-        /* 상단 헤더 영역 */
-        header {
-            padding: 15px 30px;
-            background: rgba(0, 0, 0, 0.4);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            border-bottom: 1px solid var(--border-color);
-            backdrop-filter: blur(10px);
-            z-index: 10;
-        }
+  /* 브랜드 — 로고·워터마크·푸터·최종 저장에만 (§4) */
+  --brand:#0f6fb8; --brand-2:#ffb7b2; --brand-soft:#0f2a40;
 
-        h1 { 
-            font-size: 1.5rem; 
-            font-weight: 600;
-            text-shadow: 0 0 10px rgba(79, 195, 247, 0.5); 
-            letter-spacing: 0.5px;
-        }
+  --ok:#3fb98a;   --ok-soft:#0f2e24;
+  --warn:#e0a72c; --warn-soft:#33270c;
+  --bad:#e2615a;  --bad-soft:#331a19;
 
-        /* 공통 폼 요소 스타일 */
-        select, button, input[type="range"] {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid var(--border-color);
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            backdrop-filter: blur(5px);
-            transition: all 0.2s ease;
-            outline: none;
-        }
+  --sp1:4px; --sp2:8px; --sp3:12px; --sp4:16px; --sp5:20px; --sp6:24px; --sp7:32px; --sp8:40px;
+  --r1:8px; --r2:12px; --r3:18px; --r4:999px;
+  --sh1:0 1px 2px rgba(0,0,0,.34);
+  --sh2:0 6px 18px rgba(0,0,0,.40);
+  --sh3:0 18px 48px rgba(0,0,0,.52);
+  --t-fast:.16s; --t-mid:.25s; --t-slow:.4s;
+  --spring:cubic-bezier(.34,1.56,.64,1);
+  --focus:rgba(63,169,245,.55);
 
-        select {
-            appearance: none;
-            padding-right: 30px;
-            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E");
-            background-repeat: no-repeat;
-            background-position: right 10px top 50%;
-            background-size: 12px auto;
-            min-width: 200px;
-        }
-        select option { background: var(--bg-color); color: white; }
-        
-        button:hover { 
-            background: rgba(255, 255, 255, 0.2); 
-            box-shadow: 0 0 15px rgba(79, 195, 247, 0.4); 
-            border-color: var(--accent-color);
-        }
-        button:active { transform: scale(0.98); }
+  --h-header:56px; --h-tabs:42px; --h-bar:46px;
+  --tap:44px;
+  --font:"Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+  --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
 
-        /* 메인 레이아웃 */
-        main {
-            display: flex;
-            flex: 1;
-            padding: 20px;
-            gap: 20px;
-            height: calc(100vh - 120px);
-        }
+  --c-metal:#c9713f; --c-meta:#6e8f7b; --c-non:#3d7ea6; --c-noble:#7a6bb0;
+}
+html[data-theme="light"]{
+  --bg:#eef3f8; --bg-2:#f7fafd; --panel:#ffffff; --panel-2:#f2f6fb;
+  --line:#d9e3ee; --line-2:#c3d3e3;
+  --ink:#12253a; --ink-2:#42607e; --ink-3:#7690ab;
+  --p-soft:#fdeceb; --n-soft:#eef2f6; --e-soft:#e8f3fe;
+  --gold-soft:#fdf3dc; --brand-soft:#e7f1fa;
+  --ok-soft:#e4f6ee; --warn-soft:#fdf4e0; --bad-soft:#fdeceb;
+  --sh1:0 1px 2px rgba(18,37,58,.07);
+  --sh2:0 6px 18px rgba(18,37,58,.10);
+  --sh3:0 18px 48px rgba(18,37,58,.16);
+  --focus:rgba(15,111,184,.45);
+}
 
-        /* 캔버스 영역 */
-        #canvas-container {
-            flex: 7;
-            position: relative;
-            background: radial-gradient(circle at center, rgba(33, 150, 243, 0.05) 0%, rgba(0,0,0,0.2) 100%);
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
-        }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  overscroll-behavior:none;overflow:hidden;
+}
+button,input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+h1,h2,h3,h4,p{margin:0}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:6px}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:var(--r4);border:2px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-track{background:transparent}
 
-        canvas { 
-            display: block;
-            width: 100%; 
-            height: 100%; 
-            touch-action: none;
-        }
+/* ===================== 골격 — 스크롤 없는 한 화면 (§3) ===================== */
+.app{height:100dvh;display:grid;grid-template-rows:auto auto 1fr auto;overflow:hidden}
+body.fs .app{height:100vh}
 
-        /* 툴팁 */
-        #tooltip {
-            position: absolute;
-            background: rgba(0, 0, 0, 0.85);
-            color: #fff;
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s;
-            z-index: 10;
-            border: 1px solid var(--accent-color);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            transform: translate(-50%, -120%);
-        }
+header.top{
+  height:var(--h-header);display:flex;align-items:center;gap:var(--sp3);
+  padding:0 var(--sp3);background:var(--panel);border-bottom:1px solid var(--line);
+  position:relative;z-index:40;
+}
+.brand{display:flex;align-items:center;gap:9px;min-width:0}
+.brand-mark{
+  width:30px;height:30px;border-radius:50%;flex:0 0 auto;position:relative;
+  background:radial-gradient(circle at 32% 27%, #6fd0ff 0%, var(--brand) 62%, #073d68 100%);
+  box-shadow:inset -3px -4px 8px rgba(0,20,40,.5), 0 2px 7px rgba(15,111,184,.4);
+}
+.brand-mark::after{
+  content:"";position:absolute;inset:0;margin:auto;width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%, var(--p-lo), var(--p) 72%);
+}
+.brand-tx{min-width:0}
+.brand-tx b{display:block;font-size:15.5px;font-weight:800;letter-spacing:-.03em;white-space:nowrap}
+.brand-tx small{display:block;font-size:10.5px;font-weight:700;color:var(--ink-3);letter-spacing:0;white-space:nowrap}
 
-        /* 우측 패널 영역 */
-        aside {
-            flex: 3;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            min-width: 300px;
-            max-width: 400px;
-            overflow-y: auto;
-        }
+.tools{display:flex;align-items:center;gap:var(--sp1);margin-left:auto;flex:0 0 auto}
+.ico-btn{
+  width:var(--tap);height:var(--tap);border-radius:var(--r2);display:grid;place-items:center;
+  color:var(--ink-2);transition:background var(--t-fast),color var(--t-fast);position:relative;
+}
+.ico-btn:hover{background:var(--panel-2);color:var(--ink)}
+.ico-btn.on{background:var(--brand-soft);color:var(--brand)}
+.ico-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round}
+a.ico-btn{text-decoration:none}
+.sep{width:1px;height:20px;background:var(--line);flex:0 0 auto;margin:0 2px}
+.ico-btn.yt:hover{color:#ff0033}
+.ico-btn.ig:hover{color:#d62976}
 
-        .panel {
-            background: var(--panel-bg);
-            padding: 25px;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border-color);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-        }
+/* 사운드 팝오버 — 아이콘 한 번 클릭으로 켜짐/꺼짐, 슬라이더는 잠깐 떴다 닫힌다 (§11) */
+.snd-wrap{position:relative}
+.snd-pop{
+  position:absolute;top:calc(100% + 6px);right:0;width:214px;padding:var(--sp3);
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r2);
+  box-shadow:var(--sh3);z-index:60;opacity:0;pointer-events:none;transform:translateY(-6px);
+  transition:opacity var(--t-fast),transform var(--t-fast);
+}
+.snd-pop.open{opacity:1;pointer-events:auto;transform:none}
+.snd-row{display:flex;align-items:center;gap:var(--sp2);margin-bottom:var(--sp2)}
+.snd-row:last-child{margin-bottom:0}
+.snd-lb{font-size:11.5px;font-weight:800;color:var(--ink-3);flex:0 0 34px}
+.snd-st{font-size:12.5px;font-weight:900;color:var(--ink-3)}
+.snd-st.on{color:var(--e)}
+.snd-val{font-size:11.5px;font-weight:800;color:var(--ink-2);font-variant-numeric:tabular-nums;flex:0 0 34px;text-align:right}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;flex:1 1 auto;height:4px;border-radius:var(--r4);
+  background:var(--line-2);outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--e);
+  box-shadow:0 1px 5px rgba(0,0,0,.4);cursor:pointer;
+}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radius:50%;background:var(--e);cursor:pointer}
 
-        .panel h2 { 
-            margin-top: 0; 
-            font-size: 1.25rem; 
-            border-bottom: 2px solid rgba(255,255,255,0.1); 
-            padding-bottom: 12px; 
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+/* ===================== 탭 (§12 — 잠그지 않는다) ===================== */
+nav.tabs{
+  height:var(--h-tabs);display:flex;align-items:center;gap:var(--sp1);
+  padding:0 var(--sp3);background:var(--bg-2);border-bottom:1px solid var(--line);
+  overflow-x:auto;scrollbar-width:none;position:relative;z-index:30;
+}
+nav.tabs::-webkit-scrollbar{display:none}
+.tab{
+  height:32px;padding:0 13px;border-radius:var(--r4);font-size:13px;font-weight:800;
+  color:var(--ink-3);white-space:nowrap;display:flex;align-items:center;gap:6px;
+  transition:background var(--t-fast),color var(--t-fast);
+}
+.tab:hover{background:var(--panel-2);color:var(--ink-2)}
+.tab[aria-selected="true"]{background:var(--brand);color:#fff}
+.tab .num{
+  width:17px;height:17px;border-radius:50%;display:grid;place-items:center;
+  font-size:10px;font-weight:900;background:var(--line);color:var(--ink-3);
+}
+.tab[aria-selected="true"] .num{background:rgba(255,255,255,.24);color:#fff}
+.tab.done .num{background:var(--ok);color:#062018}
+.tab-sp{margin-left:auto}
+.step-dots{display:flex;align-items:center;gap:5px;padding-left:var(--sp3);flex:0 0 auto}
+.step-dots i{width:7px;height:7px;border-radius:50%;background:var(--line-2);transition:background var(--t-fast)}
+.step-dots i.on{background:var(--ok)}
 
-        /* 정보 패널 디테일 */
-        .info-row { 
-            display: flex; 
-            justify-content: space-between; 
-            margin-bottom: 12px; 
-            font-size: 1.05rem;
-            align-items: center;
-        }
-        .info-label { color: rgba(255,255,255,0.7); }
-        .highlight { color: #ffeb3b; font-weight: bold; font-size: 1.2rem; }
-        .charge-plus { color: #ff5252; font-weight: bold; background: rgba(255,82,82,0.1); padding: 2px 8px; border-radius: 4px; }
-        .charge-minus { color: #448aff; font-weight: bold; background: rgba(68,138,255,0.1); padding: 2px 8px; border-radius: 4px; }
-        
-        .explanation-box {
-            background: rgba(0,0,0,0.3);
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 20px;
-            border-left: 4px solid var(--accent-color);
-        }
-        .explanation-box p { font-size: 0.95rem; line-height: 1.5; color: #b3e5fc; margin: 0;}
+/* ===================== 본문 ===================== */
+main{position:relative;min-height:0;overflow:hidden}
+.view{position:absolute;inset:0;display:none;min-height:0}
+.view.active{display:grid}
+.view.split{grid-template-columns:minmax(0,1fr) 384px}
+@media (max-width:1000px){ .view.split{grid-template-columns:minmax(0,1fr)} }
 
-        /* 컨트롤 패널 디테일 */
-        .controls-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
+.stage{position:relative;min-width:0;min-height:0;background:
+  radial-gradient(120% 90% at 50% 42%, rgba(63,169,245,.09) 0%, rgba(11,20,32,0) 62%),
+  linear-gradient(180deg, var(--bg-2), var(--bg));
+  overflow:hidden;}
+html[data-theme="light"] .stage{background:
+  radial-gradient(120% 90% at 50% 42%, rgba(63,169,245,.12) 0%, rgba(255,255,255,0) 62%),
+  linear-gradient(180deg,#f7fafd,#e9f0f7);}
+.stage canvas{display:block;width:100%;height:100%;touch-action:manipulation}
 
-        .slider-group { 
-            grid-column: span 2; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 8px; 
-            margin-bottom: 15px; 
-            background: rgba(0,0,0,0.2);
-            padding: 15px;
-            border-radius: 8px;
-        }
-        .slider-group label { 
-            font-size: 0.9rem; 
-            color: rgba(255,255,255,0.8);
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        input[type="range"] {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 6px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 3px;
-            outline: none;
-            border: none;
-            padding: 0;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: var(--accent-color);
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
-        }
+.side{
+  border-left:1px solid var(--line);background:var(--panel);
+  overflow:auto;overscroll-behavior:contain;padding:var(--sp3);
+  display:flex;flex-direction:column;gap:var(--sp3);min-height:0;
+}
+.side > *{flex:0 0 auto}
+@media (max-width:1000px){
+  .view.split{grid-template-rows:minmax(200px,1fr) minmax(0,46%)}
+  .side{border-left:0;border-top:1px solid var(--line)}
+}
 
-        #btn-quiz { background: rgba(156, 39, 176, 0.3); border-color: #9c27b0; grid-column: span 2;}
-        #btn-quiz:hover { background: rgba(156, 39, 176, 0.5); box-shadow: 0 0 15px rgba(156, 39, 176, 0.6); }
+/* 무대 위 겹침 요소 */
+.badges{position:absolute;top:var(--sp3);left:var(--sp3);display:flex;gap:6px;flex-wrap:wrap;max-width:calc(100% - 32px);z-index:4}
+.bdg{
+  display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border-radius:var(--r4);
+  background:color-mix(in srgb, var(--panel) 86%, transparent);backdrop-filter:blur(9px);
+  border:1px solid var(--line);font-size:11.5px;font-weight:800;color:var(--ink-2);box-shadow:var(--sh1);
+}
+.bdg b{color:var(--ink);font-weight:900;font-variant-numeric:tabular-nums}
+.bdg i{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.bdg.p i{background:radial-gradient(circle at 33% 30%, var(--p-lo), var(--p))}
+.bdg.n i{background:radial-gradient(circle at 33% 30%, var(--n-lo), var(--n))}
+.bdg.e i{background:radial-gradient(circle at 33% 30%, var(--e-lo), var(--e))}
+.bdg.pos{border-color:var(--p);color:var(--p-lo)}
+.bdg.neg{border-color:var(--e);color:var(--e-lo)}
 
-        /* 하단 푸터 */
-        footer {
-            text-align: center;
-            padding: 12px;
-            font-size: 12px;
-            color: rgba(255,255,255,0.5);
-            background: rgba(0, 0, 0, 0.6);
-            border-top: 1px solid var(--border-color);
-            z-index: 10;
-        }
+.stage-tools{position:absolute;top:var(--sp3);right:var(--sp3);display:flex;flex-direction:column;gap:6px;z-index:4}
+.s-btn{
+  width:38px;height:38px;border-radius:var(--r2);display:grid;place-items:center;
+  background:color-mix(in srgb, var(--panel) 86%, transparent);backdrop-filter:blur(9px);
+  border:1px solid var(--line);color:var(--ink-2);box-shadow:var(--sh1);
+  transition:transform var(--t-fast),color var(--t-fast),border-color var(--t-fast);
+}
+.s-btn:hover{color:var(--ink);border-color:var(--line-2);transform:translateY(-1px)}
+.s-btn:active{transform:scale(.94)}
+.s-btn.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.s-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 
-        /* 커스텀 모달 (알림 및 학습) */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.75);
-            backdrop-filter: blur(5px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
+.stage-name{
+  position:absolute;left:50%;bottom:var(--sp3);transform:translateX(-50%);z-index:4;text-align:center;
+  padding:7px 18px;border-radius:var(--r4);white-space:nowrap;
+  background:color-mix(in srgb, var(--panel) 88%, transparent);backdrop-filter:blur(9px);
+  border:1px solid var(--line);box-shadow:var(--sh1);
+}
+.stage-name .t{font-size:15px;font-weight:900;letter-spacing:-.02em}
+.stage-name .s{font-size:11.5px;font-weight:700;color:var(--ink-3);font-variant-numeric:tabular-nums}
 
-        .modal-content {
-            background: var(--bg-color);
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 500px;
-            width: 90%;
-            border: 1px solid var(--accent-color);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 20px rgba(79, 195, 247, 0.2);
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-        }
+/* 시그니처 — 핵 응집 전환 버튼 */
+.fuse{
+  position:absolute;left:var(--sp3);bottom:var(--sp3);z-index:5;
+  display:inline-flex;align-items:center;gap:9px;height:42px;padding:0 17px 0 10px;
+  border-radius:var(--r4);border:1px solid var(--line);
+  background:color-mix(in srgb, var(--panel) 90%, transparent);backdrop-filter:blur(10px);
+  box-shadow:var(--sh2);font-size:13px;font-weight:900;letter-spacing:-.02em;color:var(--ink);
+  transition:transform var(--t-fast),box-shadow var(--t-fast),border-color var(--t-fast);
+}
+.fuse:hover{transform:translateY(-2px);box-shadow:var(--sh3);border-color:var(--line-2)}
+.fuse:active{transform:scale(.97)}
+.fuse .glyph{position:relative;width:26px;height:26px;flex:0 0 auto}
+.fuse .glyph i{
+  position:absolute;border-radius:50%;transition:transform var(--t-slow) var(--spring), opacity var(--t-mid);
+}
+.fuse .glyph i.a{width:15px;height:15px;left:0;top:5px;
+  background:radial-gradient(circle at 32% 27%, var(--p-lo), var(--p) 62%, var(--p-hi))}
+.fuse .glyph i.b{width:12px;height:12px;right:0;top:1px;
+  background:radial-gradient(circle at 32% 27%, var(--n-lo), var(--n) 62%, var(--n-hi))}
+.fuse .glyph i.c{width:11px;height:11px;right:2px;bottom:0;
+  background:radial-gradient(circle at 32% 27%, var(--p-lo), var(--p) 62%, var(--p-hi))}
+.fuse.merged .glyph i.a{transform:translate(5px,-2px) scale(1.5)}
+.fuse.merged .glyph i.b{transform:translate(-7px,7px) scale(.3);opacity:0}
+.fuse.merged .glyph i.c{transform:translate(-6px,-6px) scale(.3);opacity:0}
+@media (max-width:560px){ .fuse .lb{display:none} .fuse{padding:0 10px} }
 
-        .modal-overlay.active { opacity: 1; }
-        .modal-overlay.active .modal-content { transform: translateY(0); }
+/* ===================== 사이드 패널 블록 ===================== */
+.blk{border:1px solid var(--line);border-radius:var(--r3);background:var(--panel-2);overflow:hidden}
+.blk-h{
+  display:flex;align-items:center;gap:var(--sp2);padding:10px var(--sp3);
+  border-bottom:1px solid var(--line);
+}
+.blk-h h3{font-size:13px;font-weight:900;letter-spacing:-.02em}
+.blk-h .hint{margin-left:auto;font-size:10.5px;font-weight:800;color:var(--ink-3);white-space:nowrap}
+.blk-h .std{
+  font-size:9.5px;font-weight:900;color:var(--brand);background:var(--brand-soft);
+  padding:2px 6px;border-radius:var(--r1);letter-spacing:0;white-space:nowrap;
+}
+.blk-b{padding:var(--sp3)}
+.blk-b.tight{padding:10px var(--sp3) var(--sp3)}
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
-        .modal-header h2 { margin: 0; color: var(--accent-color); font-size: 1.4rem; }
-        .btn-close-icon { background: transparent; border: none; font-size: 1.5rem; padding: 0; color: white; line-height: 1; }
-        .btn-close-icon:hover { box-shadow: none; color: #ff5252; transform: scale(1.1); }
+/* 열린 레이아웃 — 주요 수치는 카드로 감싸지 않는다 */
+.kv{display:flex;justify-content:space-between;align-items:baseline;gap:var(--sp2);padding:6px 0;border-bottom:1px dashed var(--line)}
+.kv:last-child{border-bottom:0}
+.kv .k{font-size:12px;font-weight:700;color:var(--ink-3)}
+.kv .v{font-size:13.5px;font-weight:900;font-variant-numeric:tabular-nums;text-align:right}
 
-        .modal-body p { line-height: 1.7; margin-bottom: 15px; color: rgba(255,255,255,0.9); font-size: 1.05rem;}
-        .modal-body ul { padding-left: 20px; margin-bottom: 15px; line-height: 1.7; }
-        .modal-body li { margin-bottom: 8px; color: rgba(255,255,255,0.8); }
-        
-        .modal-footer { margin-top: 25px; display: flex; justify-content: flex-end; }
-        .btn-primary { background: var(--electron-color); border: none; font-weight: bold; }
-        .btn-primary:hover { background: #1976d2; }
+/* ===================== 입자 3종 조절 콘솔 ===================== */
+.pcon{display:flex;flex-direction:column;gap:7px}
+.prow{
+  position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--sp2);
+  align-items:center;padding:8px 9px 8px 12px;border-radius:var(--r2);
+  border:1px solid var(--line);background:var(--panel);overflow:hidden;
+  transition:border-color var(--t-fast),box-shadow var(--t-fast);
+}
+.prow::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
+.prow.p{--c:var(--p);background:linear-gradient(97deg,var(--p-soft) 0%,var(--panel) 58%)}
+.prow.n{--c:var(--n);background:linear-gradient(97deg,var(--n-soft) 0%,var(--panel) 58%)}
+.prow.e{--c:var(--e);background:linear-gradient(97deg,var(--e-soft) 0%,var(--panel) 58%)}
+.prow:focus-within{border-color:var(--c);box-shadow:0 0 0 3px color-mix(in srgb, var(--c) 24%, transparent)}
+.prow .nm{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:900;letter-spacing:-.02em}
+.prow .nm i{
+  width:15px;height:15px;border-radius:50%;flex:0 0 auto;
+  background:radial-gradient(circle at 32% 27%, rgba(255,255,255,.85) 0%, var(--c) 58%, rgba(0,0,0,.45) 100%);
+  box-shadow:inset -2px -2px 3px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.28);
+}
+.prow .nm em{font-style:normal;font-size:10px;font-weight:900;color:#fff;background:var(--c);padding:1px 6px;border-radius:var(--r4)}
+.prow .ds{font-size:10.5px;font-weight:700;color:var(--ink-3);line-height:1.4;margin-top:1px}
+.step{display:flex;align-items:stretch;gap:5px;flex:0 0 auto}
+.step button{
+  width:38px;height:38px;border-radius:var(--r2);border:1.5px solid var(--line-2);background:var(--panel-2);
+  font-size:19px;font-weight:900;line-height:1;color:var(--ink-2);display:grid;place-items:center;
+  transition:transform var(--t-fast),background var(--t-fast),color var(--t-fast),border-color var(--t-fast);
+  touch-action:manipulation;user-select:none;
+}
+.step button:not(:disabled):hover{border-color:var(--c);color:var(--c);background:var(--panel)}
+.step button:not(:disabled):active{transform:scale(.9);background:var(--c);color:#fff;border-color:var(--c)}
+.step button:disabled{opacity:.3;cursor:not-allowed}
+@media (pointer:coarse){ .step button{width:var(--tap);height:var(--tap)} }
+.step .fld{
+  width:60px;display:flex;align-items:center;justify-content:center;gap:3px;
+  border:1.5px solid var(--line);border-radius:var(--r2);background:var(--panel-2);
+}
+.step .fld:focus-within{border-color:var(--c)}
+.step .fld input{
+  width:100%;min-width:0;border:0;background:none;outline:none;text-align:center;padding:5px 0 5px 6px;
+  font-size:20px;font-weight:900;letter-spacing:-.04em;color:var(--c);font-variant-numeric:tabular-nums;
+}
+.step .fld u{text-decoration:none;font-size:10px;font-weight:800;color:var(--ink-3);padding-right:5px}
+@keyframes tick{0%{transform:scale(1)}45%{transform:scale(1.16)}100%{transform:scale(1)}}
+.step .fld input.tick{animation:tick .22s var(--spring)}
 
-        /* 원자 모형 변천사 타임라인 스타일 */
-        .history-timeline {
-            display: flex;
-            gap: 15px;
-            overflow-x: auto;
-            padding: 10px 0 20px 0;
-            scrollbar-width: thin;
-            scrollbar-color: var(--accent-color) rgba(0,0,0,0.2);
-        }
-        .history-timeline::-webkit-scrollbar { height: 8px; }
-        .history-timeline::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 4px; }
-        .history-timeline::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
-        
-        .history-item {
-            flex: 0 0 220px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px;
-            padding: 20px 15px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-        }
-        
-        /* 화살표 */
-        .history-item:not(:last-child)::after {
-            content: '▶';
-            position: absolute;
-            right: -15px;
-            top: 55px;
-            color: rgba(255,255,255,0.3);
-            font-size: 1.2rem;
-            z-index: 1;
-        }
-        
-        .history-item h3 {
-            color: var(--accent-color);
-            margin: 15px 0 10px 0;
-            font-size: 1.15rem;
-        }
-        .history-item p {
-            font-size: 0.95rem;
-            color: rgba(255,255,255,0.8);
-            line-height: 1.5;
-            word-break: keep-all;
-            margin: 0;
-        }
-        
-        /* CSS로 그리는 원자 모형 아이콘 */
-        .model-circle {
-            width: 80px; height: 80px;
-            border-radius: 50%;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            display: flex; justify-content: center; align-items: center;
-            position: relative;
-            overflow: hidden;
-        }
-        /* 돌턴 */
-        .model-dalton { background: radial-gradient(circle at 35% 35%, #d1c4e9, #7b1fa2); }
-        /* 톰슨 */
-        .model-thomson { background: radial-gradient(circle at 35% 35%, #bbdefb, #1976d2); }
-        .t-plus { position: absolute; color: rgba(0,0,0,0.3); font-size: 18px; font-weight: bold; line-height: 1; z-index: 1; }
-        .t-minus { position: absolute; color: white; background: #4caf50; width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; line-height: 1; z-index: 2; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
-        /* 러더퍼드 */
-        .model-rutherford { background: radial-gradient(circle at 35% 35%, #fff9c4, #fbc02d); }
-        .r-orbit { position: absolute; width: 70px; height: 25px; border: 1px dashed rgba(76,175,80,0.6); border-radius: 50%; }
-        /* 보어 */
-        .model-bohr { background: radial-gradient(circle at 35% 35%, #ffcdd2, #d32f2f); }
-        /* 보른(현대) */
-        .model-modern { background: radial-gradient(circle at center, #e53935 0%, rgba(63,81,181,0.6) 20%, rgba(63,81,181,0) 70%); box-shadow: none; border: 1px dashed rgba(255,255,255,0.2); }
-        
-        .model-core { width: 14px; height: 14px; background: #e53935; border-radius: 50%; z-index: 2; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
-        .model-orbit { position: absolute; border: 1px solid rgba(255,255,255,0.6); border-radius: 50%; }
-        .orbit-1 { width: 35px; height: 35px; }
-        .orbit-2 { width: 60px; height: 60px; }
-        .orbit-e { position: absolute; width: 12px; height: 12px; background: #4caf50; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 10px; font-weight: bold; line-height: 1; transform: translate(-50%, -50%); z-index: 3; box-shadow: 0 1px 3px rgba(0,0,0,0.5); }
-        .orbit-e::after { content: '-'; }
+/* 판정 배지 */
+.verdict{
+  display:flex;gap:9px;align-items:flex-start;margin-top:10px;padding:10px 12px;
+  border-radius:var(--r2);border:1px solid transparent;font-size:12px;font-weight:800;line-height:1.55;
+}
+.verdict .em{font-size:18px;line-height:1.2;flex:0 0 auto}
+.verdict.neu{background:var(--ok-soft);border-color:color-mix(in srgb,var(--ok) 40%,transparent);color:var(--ok)}
+.verdict.pos{background:var(--p-soft);border-color:color-mix(in srgb,var(--p) 45%,transparent);color:var(--p-lo)}
+.verdict.neg{background:var(--e-soft);border-color:color-mix(in srgb,var(--e) 45%,transparent);color:var(--e-lo)}
+.verdict.warn{background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 45%,transparent);color:var(--warn)}
+.verdict b{font-weight:900}
 
-        /* 반응형 브레이크포인트 */
-        @media (max-width: 1024px) {
-            main { flex-direction: column; height: auto; }
-            #canvas-container { min-height: 500px; }
-            aside { max-width: 100%; flex-direction: row; flex-wrap: wrap; }
-            .panel { flex: 1; min-width: 300px; }
-        }
-        @media (max-width: 768px) {
-            header { flex-direction: column; text-align: center; }
-            select { width: 100%; }
-            #canvas-container { min-height: 400px; }
-            aside { flex-direction: column; }
-            .controls-grid { grid-template-columns: 1fr; }
-            .slider-group { grid-column: span 1; }
-            #btn-quiz { grid-column: span 1; }
-        }
-    </style>
+/* 교과서식 총전하량 식 */
+.qform{
+  padding:10px 12px;border-radius:var(--r2);border:1px dashed var(--line-2);background:var(--panel);
+  font-size:11.5px;font-weight:800;color:var(--ink-2);line-height:1.85;
+}
+.qform .hl-p{color:var(--p-lo)} .qform .hl-e{color:var(--e-lo)}
+html[data-theme="light"] .qform .hl-p{color:var(--p-hi)}
+html[data-theme="light"] .qform .hl-e{color:var(--e-hi)}
+.qform .op{color:var(--ink-3);font-weight:900;padding:0 3px}
+.calc{margin-top:9px;border:1px solid var(--line);border-radius:var(--r2);overflow:hidden}
+.calc .r{display:flex;align-items:center;gap:var(--sp2);padding:8px 12px;border-bottom:1px solid var(--line);font-size:12px;font-weight:800}
+.calc .r:last-child{border-bottom:0}
+.calc .r .lb{color:var(--ink-2);min-width:0}
+.calc .r .nv{margin-left:auto;font-size:14px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}
+.calc .r.p{background:var(--p-soft)} .calc .r.p .nv{color:var(--p-lo)}
+.calc .r.e{background:var(--e-soft)} .calc .r.e .nv{color:var(--e-lo)}
+.calc .r.s{background:var(--panel);border-top:1.5px solid var(--line-2)}
+html[data-theme="light"] .calc .r.p .nv{color:var(--p-hi)}
+html[data-theme="light"] .calc .r.e .nv{color:var(--e-hi)}
+
+/* ===================== 버튼 ===================== */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-height:36px;padding:0 13px;border-radius:var(--r2);border:1px solid var(--line-2);
+  background:var(--panel);color:var(--ink-2);font-size:12.5px;font-weight:800;
+  transition:transform var(--t-fast),background var(--t-fast),color var(--t-fast),border-color var(--t-fast);
+}
+.btn:hover{background:var(--panel-2);color:var(--ink);border-color:var(--ink-3)}
+.btn:active{transform:scale(.97)}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.pri:hover{background:#1580cf;color:#fff}
+.btn.save{background:linear-gradient(100deg,var(--brand),#1a86d6);border-color:transparent;color:#fff}
+.btn.sm{min-height:32px;padding:0 10px;font-size:11.5px}
+.btn.blk{width:100%}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-row{display:flex;gap:6px;flex-wrap:wrap}
+.seg{display:flex;gap:2px;padding:3px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r2)}
+.seg button{
+  flex:1 1 0;min-height:30px;padding:0 8px;border-radius:var(--r1);font-size:11.5px;font-weight:800;
+  color:var(--ink-3);transition:background var(--t-fast),color var(--t-fast);
+}
+.seg button:hover{color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--brand);color:#fff}
+.sw{
+  width:40px;height:23px;border-radius:var(--r4);background:var(--line-2);position:relative;
+  transition:background var(--t-fast);flex:0 0 auto;
+}
+.sw::after{content:"";position:absolute;left:2px;top:2px;width:19px;height:19px;border-radius:50%;
+  background:#fff;transition:transform var(--t-fast) var(--spring);box-shadow:var(--sh1)}
+.sw[aria-pressed="true"]{background:var(--brand)}
+.sw[aria-pressed="true"]::after{transform:translateX(17px)}
+.sw-row{display:flex;align-items:center;gap:var(--sp2);padding:7px 0;border-bottom:1px dashed var(--line)}
+.sw-row:last-child{border-bottom:0}
+.sw-row .t{font-size:12px;font-weight:700;color:var(--ink-2);flex:1 1 auto}
+
+.note{
+  padding:9px 11px;border-radius:var(--r2);background:var(--brand-soft);
+  font-size:11.5px;font-weight:800;line-height:1.6;color:var(--ink-2);
+}
+.note b{color:var(--ink)}
+.note.warn{background:var(--warn-soft);color:var(--warn)}
+.note.ok{background:var(--ok-soft);color:var(--ok)}
+
+/* ===================== 컨트롤 바 ===================== */
+.bar{
+  height:var(--h-bar);display:flex;align-items:center;gap:var(--sp3);padding:0 var(--sp3);
+  background:var(--panel);border-top:1px solid var(--line);position:relative;z-index:20;
+}
+.bar .guide{font-size:12px;font-weight:800;color:var(--ink-2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .guide b{color:var(--ink)}
+.bar .right{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.foot-mini{font-size:10px;font-weight:700;color:var(--ink-3);white-space:nowrap}
+@media (max-width:700px){ .foot-mini{display:none} }
+
+/* ===================== 주기율표 1~30 ===================== */
+.pt-wrap{padding:var(--sp4);display:flex;flex-direction:column;gap:var(--sp3);min-height:0;overflow:auto;overscroll-behavior:contain}
+.ptable{
+  display:grid;grid-template-columns:26px repeat(18,minmax(0,1fr));gap:5px;
+  min-width:760px;align-content:start;
+}
+.pt-ax{display:grid;place-items:center;font-size:10.5px;font-weight:900;color:var(--ink-3)}
+.pt-ax.top{align-items:end;padding-bottom:3px}
+.pt-cell{
+  position:relative;aspect-ratio:1/1;border-radius:var(--r1);overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;
+  color:#fff;border:1.5px solid transparent;transition:transform var(--t-fast),box-shadow var(--t-fast),border-color var(--t-fast);
+}
+.pt-cell::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(158deg, rgba(255,255,255,.24) 0%, rgba(255,255,255,0) 46%, rgba(0,0,0,.20) 100%);
+}
+.pt-cell .z{font-size:clamp(8px,.92vw,12px);font-weight:800;opacity:.9;font-variant-numeric:tabular-nums}
+/* 1~30번 — 수업에서 실제로 다루는 구간이므로 기호를 크게 (요청) */
+.pt-cell .sy{font-size:clamp(17px,2.5vw,34px);font-weight:900;letter-spacing:-.05em;text-shadow:0 2px 5px rgba(0,0,0,.35)}
+.pt-cell .kn{font-size:clamp(8px,.95vw,12px);font-weight:800;opacity:.95;white-space:nowrap}
+.pt-cell:hover{transform:translateY(-3px) scale(1.05);z-index:6;box-shadow:var(--sh2);border-color:rgba(255,255,255,.7)}
+.pt-cell:active{transform:scale(1.01)}
+.pt-cell.sel{border-color:#fff;box-shadow:0 0 0 3px var(--bg), 0 0 0 5px var(--gold);z-index:5}
+.pt-cell.fam{box-shadow:inset 0 0 0 3px var(--gold)}
+.pt-cell.dim{opacity:.2}
+.pt-cell.sp{background:none!important;pointer-events:none}
+.pt-cell.more{
+  background:none!important;border:1.5px dashed var(--line-2);color:var(--ink-3);
+  font-size:11px;font-weight:800;pointer-events:none;
+}
+.pt-legend{display:flex;flex-wrap:wrap;gap:6px}
+.lg{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:var(--ink-2);
+  padding:4px 10px;border-radius:var(--r4);background:var(--panel-2);border:1px solid var(--line)}
+.lg i{width:11px;height:11px;border-radius:3px}
+
+/* 같은 족 원소의 성질 — 교과서 146~147쪽 탐구 [9과11-03] */
+.fam-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:var(--sp3)}
+.fam-card{border:1px solid var(--line);border-radius:var(--r2);overflow:hidden;background:var(--panel-2)}
+.fam-card .h{display:flex;align-items:center;gap:7px;padding:9px 12px;color:#fff;font-size:12.5px;font-weight:900}
+.fam-card.g1 .h{background:linear-gradient(100deg,#c9713f,#9d4f24)}
+.fam-card.g17 .h{background:linear-gradient(100deg,#5b9c46,#3a6d2b)}
+.fam-card.g18 .h{background:linear-gradient(100deg,#7a6bb0,#4f4287)}
+.fam-card .h .sy{margin-left:auto;font-size:11px;font-weight:800;opacity:.94;letter-spacing:.02em}
+.fam-card .b{padding:9px 12px}
+.fam-card .l{display:flex;gap:9px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:11.5px;font-weight:700;line-height:1.5}
+.fam-card .l:last-child{border-bottom:0}
+.fam-card .l .k{flex:0 0 64px;color:var(--ink-3);font-weight:900}
+.fam-card .l .v{color:var(--ink-2);min-width:0}
+.fam-card .l .v b{color:var(--ink)}
+
+/* ===================== 탐구 질문 (§9) ===================== */
+.inq-wrap{padding:var(--sp4);overflow:auto;overscroll-behavior:contain;min-height:0}
+.inq-top{
+  display:flex;align-items:center;gap:var(--sp3);margin-bottom:var(--sp3);padding:10px 13px;
+  border-radius:var(--r2);background:var(--panel-2);border:1px solid var(--line);
+  font-size:11.5px;font-weight:800;color:var(--ink-3);
+}
+.inq-top .cnt{margin-left:auto;font-size:12.5px;font-weight:900;color:var(--ink);font-variant-numeric:tabular-nums}
+.inq{border:1px solid var(--line);border-radius:var(--r2);background:var(--panel-2);margin-bottom:9px;overflow:hidden}
+.inq-q{display:flex;align-items:flex-start;gap:10px;padding:12px 13px;width:100%;text-align:left}
+.inq-q .no{
+  width:22px;height:22px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
+  background:var(--line);color:var(--ink-3);font-size:11px;font-weight:900;
+}
+.inq.done .inq-q .no{background:var(--ok);color:#062018}
+.inq.lock .inq-q .no{background:var(--gold);color:#2a1e04}
+.inq-q .tx{flex:1 1 auto;min-width:0;font-size:13px;font-weight:800;line-height:1.6}
+.inq-q .std{font-size:9.5px;font-weight:900;color:var(--brand);background:var(--brand-soft);padding:2px 6px;border-radius:var(--r1);margin-left:6px;white-space:nowrap}
+.inq-q .cv{margin-left:auto;color:var(--ink-3);flex:0 0 auto;transition:transform var(--t-fast)}
+.inq.open .inq-q .cv{transform:rotate(180deg)}
+.inq-b{display:none;padding:0 13px 13px}
+.inq.open .inq-b{display:block}
+.inq textarea{
+  width:100%;min-height:96px;resize:vertical;padding:10px 12px;border-radius:var(--r2);
+  border:1.5px solid var(--line);background:var(--panel);color:var(--ink);
+  font-size:13px;font-weight:600;line-height:1.7;outline:none;
+}
+.inq textarea:focus{border-color:var(--brand)}
+.inq textarea[readonly]{background:var(--bg-2);color:var(--ink-3);cursor:not-allowed}
+.inq-meta{display:flex;align-items:center;gap:7px;margin-top:8px;flex-wrap:wrap}
+.inq-meta .cc{font-size:11px;font-weight:800;color:var(--ink-3);font-variant-numeric:tabular-nums;margin-right:auto}
+.inq-meta .cc.ok{color:var(--ok)}
+.tagx{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:900;padding:3px 8px;border-radius:var(--r4)}
+.tagx.done{background:var(--ok-soft);color:var(--ok)}
+.tagx.lock{background:var(--gold-soft);color:var(--gold)}
+.tagx.hint{background:var(--warn-soft);color:var(--warn)}
+.panel-hint,.panel-ans{margin-top:9px;padding:10px 12px;border-radius:var(--r2);font-size:12px;font-weight:700;line-height:1.7}
+.panel-hint{background:var(--warn-soft);border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);color:var(--warn)}
+.panel-ans{background:var(--ok-soft);border:1px solid color-mix(in srgb,var(--ok) 40%,transparent);color:var(--ink-2)}
+.panel-ans .ttl{font-size:11.5px;font-weight:900;color:var(--ok);margin-bottom:5px}
+.panel-ans .hi{color:var(--ok);font-weight:900}
+.panel-hint .ttl{font-size:11.5px;font-weight:900;margin-bottom:4px}
+.panel-hint .free{display:block;margin-top:5px;font-size:10.5px;font-weight:800;opacity:.85}
+
+/* ===================== 퀴즈 ===================== */
+.quiz-wrap{padding:var(--sp4);overflow:auto;overscroll-behavior:contain;min-height:0;display:flex;flex-direction:column;gap:var(--sp3)}
+.qhead{display:flex;align-items:center;gap:var(--sp3);flex-wrap:wrap}
+.prog{flex:1 1 160px;height:6px;border-radius:var(--r4);background:var(--line);overflow:hidden;min-width:120px}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--e));transition:width var(--t-mid)}
+.score-pill{
+  display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:var(--r4);
+  background:var(--gold-soft);color:var(--gold);font-size:12px;font-weight:900;font-variant-numeric:tabular-nums;
+}
+.qcard{border:1px solid var(--line);border-radius:var(--r3);background:var(--panel-2);padding:var(--sp4)}
+.qcard .qn{font-size:11px;font-weight:900;color:var(--ink-3);margin-bottom:6px}
+.qcard .qq{font-size:16px;font-weight:900;line-height:1.6;letter-spacing:-.02em;margin-bottom:var(--sp3)}
+.qcard .qq b{color:var(--e-lo)}
+html[data-theme="light"] .qcard .qq b{color:var(--e-hi)}
+.opts{display:grid;gap:7px}
+.opt{
+  display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:var(--r2);
+  border:1.5px solid var(--line);background:var(--panel);text-align:left;
+  font-size:13.5px;font-weight:800;transition:border-color var(--t-fast),background var(--t-fast),transform var(--t-fast);
+}
+.opt:hover:not(:disabled){border-color:var(--line-2);background:var(--panel-2)}
+.opt:active:not(:disabled){transform:scale(.99)}
+.opt .k{
+  width:24px;height:24px;border-radius:var(--r1);flex:0 0 auto;display:grid;place-items:center;
+  background:var(--line);color:var(--ink-3);font-size:11.5px;font-weight:900;
+}
+.opt.ok{border-color:var(--ok);background:var(--ok-soft)}
+.opt.ok .k{background:var(--ok);color:#062018}
+.opt.no{border-color:var(--bad);background:var(--bad-soft)}
+.opt.no .k{background:var(--bad);color:#fff}
+.explain{margin-top:var(--sp3);padding:11px 13px;border-radius:var(--r2);font-size:12.5px;font-weight:700;line-height:1.7}
+.explain.ok{background:var(--ok-soft);color:var(--ok)}
+.explain.no{background:var(--bad-soft);color:var(--bad)}
+.explain b{font-weight:900}
+.wrong-list{display:flex;flex-direction:column;gap:7px}
+.wrong-item{padding:10px 12px;border-radius:var(--r2);border:1px solid var(--line);background:var(--panel);font-size:12px;font-weight:700;line-height:1.6}
+.wrong-item .q{font-weight:900;margin-bottom:3px}
+.wrong-item .a{color:var(--ink-3)}
+.wrong-item .a b{color:var(--ok)}
+
+/* ===================== 이론 드로어 (§8) ===================== */
+.scrim{position:fixed;inset:0;background:rgba(4,10,18,.6);backdrop-filter:blur(4px);z-index:180;
+  opacity:0;pointer-events:none;transition:opacity var(--t-mid)}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;width:min(430px,100%);z-index:190;background:var(--panel);
+  border-left:1px solid var(--line);box-shadow:var(--sh3);display:flex;flex-direction:column;
+  transform:translateX(104%);transition:transform var(--t-slow) var(--spring);
+}
+.drawer.open{transform:none}
+.drawer-h{display:flex;align-items:center;gap:var(--sp2);padding:var(--sp3) var(--sp4);border-bottom:1px solid var(--line);flex:0 0 auto}
+.drawer-h h2{font-size:14.5px;font-weight:900;letter-spacing:-.03em;flex:1 1 auto}
+.drawer-pg{font-size:11px;font-weight:900;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.drawer-b{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:var(--sp4)}
+.drawer-f{display:flex;align-items:center;gap:var(--sp2);padding:var(--sp3) var(--sp4);border-top:1px solid var(--line);flex:0 0 auto}
+.dots{display:flex;gap:5px;margin:0 auto}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--line-2);transition:background var(--t-fast),width var(--t-fast)}
+.dots i.on{background:var(--brand);width:18px;border-radius:var(--r4)}
+.th-fig{border:1px solid var(--line);border-radius:var(--r2);background:var(--panel-2);padding:var(--sp3);margin-bottom:var(--sp3)}
+.th-fig svg{width:100%;height:auto;display:block}
+.th-def{font-size:14px;font-weight:900;letter-spacing:-.02em;line-height:1.5;margin-bottom:7px}
+.th-tx{font-size:12.5px;font-weight:700;color:var(--ink-2);line-height:1.75}
+.th-tx b{color:var(--ink)}
+.th-link{
+  margin-top:var(--sp3);padding:10px 12px;border-radius:var(--r2);background:var(--brand-soft);
+  font-size:12px;font-weight:800;color:var(--ink-2);line-height:1.6;
+}
+.th-link b{color:var(--ink)}
+.th-more{margin-top:var(--sp3);border:1px solid var(--line);border-radius:var(--r2);overflow:hidden}
+.th-more summary{padding:9px 12px;font-size:12px;font-weight:900;color:var(--ink-2);cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px}
+.th-more summary::-webkit-details-marker{display:none}
+.th-more summary::after{content:"▾";margin-left:auto;color:var(--ink-3);transition:transform var(--t-fast)}
+.th-more[open] summary::after{transform:rotate(180deg)}
+.th-more .bd{padding:0 12px 11px;font-size:12px;font-weight:700;color:var(--ink-2);line-height:1.75}
+@media (max-width:760px){
+  .drawer{top:auto;left:0;right:0;width:100%;height:min(84dvh,660px);border-left:0;border-top:1px solid var(--line);
+    border-radius:var(--r3) var(--r3) 0 0;transform:translateY(104%)}
+  .drawer.open{transform:none}
+}
+
+/* 원자 모형 변천사 타임라인 */
+.hist{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;overscroll-behavior-x:contain}
+.hist-i{flex:0 0 132px;border:1px solid var(--line);border-radius:var(--r2);background:var(--panel);padding:11px 9px;text-align:center}
+.hist-i .fig{width:76px;height:76px;margin:0 auto 8px;border-radius:50%;position:relative;overflow:hidden;box-shadow:var(--sh1)}
+.hist-i .nm{font-size:12px;font-weight:900;color:var(--e-lo);letter-spacing:-.02em}
+html[data-theme="light"] .hist-i .nm{color:var(--e-hi)}
+.hist-i .ds{font-size:10.5px;font-weight:700;color:var(--ink-3);line-height:1.45;margin-top:3px;word-break:keep-all}
+.f-dalton{background:radial-gradient(circle at 34% 30%, #b9c8d8, #566d84)}
+.f-thomson{background:radial-gradient(circle at 34% 30%, #9fc9ef, #2c6ea8)}
+.f-ruther{background:radial-gradient(circle at 34% 30%, #f3dfa5, #b4862a)}
+.f-bohr{background:radial-gradient(circle at 34% 30%, #f0a8a1, #a3352c)}
+.f-modern{background:radial-gradient(circle at 50% 50%, var(--p) 0%, rgba(63,169,245,.5) 22%, rgba(63,169,245,0) 72%)}
+.f-dot{position:absolute;border-radius:50%;transform:translate(-50%,-50%)}
+.f-core{width:13px;height:13px;background:var(--p);left:50%;top:50%;box-shadow:0 0 7px rgba(226,72,59,.8)}
+.f-e{width:9px;height:9px;background:var(--e);box-shadow:0 0 5px rgba(63,169,245,.7)}
+.f-pl{position:absolute;transform:translate(-50%,-50%);color:rgba(255,255,255,.55);font-size:13px;font-weight:900;line-height:1}
+.f-orb{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:1px dashed rgba(255,255,255,.5);border-radius:50%}
+
+/* ===================== 모달 ===================== */
+.modal-bd{
+  position:fixed;inset:0;background:rgba(4,10,18,.62);backdrop-filter:blur(4px);z-index:200;
+  display:grid;place-items:center;padding:var(--sp4);opacity:0;pointer-events:none;transition:opacity var(--t-mid);
+}
+.modal-bd.open{opacity:1;pointer-events:auto}
+.modal{
+  width:100%;max-width:620px;max-height:86dvh;display:flex;flex-direction:column;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r3);box-shadow:var(--sh3);
+  transform:translateY(10px) scale(.985);transition:transform var(--t-mid) var(--spring);
+}
+.modal-bd.open .modal{transform:none}
+.modal-h{display:flex;align-items:center;gap:var(--sp2);padding:var(--sp3) var(--sp4);border-bottom:1px solid var(--line);flex:0 0 auto}
+.modal-h h2{font-size:15px;font-weight:900;letter-spacing:-.03em;flex:1 1 auto}
+.modal-b{padding:var(--sp4);overflow:auto;overscroll-behavior:contain;flex:1 1 auto}
+.modal-f{display:flex;gap:var(--sp2);justify-content:flex-end;padding:var(--sp3) var(--sp4);border-top:1px solid var(--line);flex:0 0 auto;flex-wrap:wrap}
+
+.hlist{display:flex;flex-direction:column;gap:7px}
+.hitem{display:flex;gap:10px;padding:10px 12px;border-radius:var(--r2);background:var(--panel-2);border:1px solid var(--line)}
+.hitem .no{width:22px;height:22px;border-radius:var(--r1);flex:0 0 auto;display:grid;place-items:center;
+  background:var(--brand-soft);color:var(--brand);font-size:11px;font-weight:900}
+.hitem .tx{font-size:12.5px;font-weight:700;line-height:1.65;color:var(--ink-2);min-width:0}
+.hitem .tx b{color:var(--ink)}
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:5px;margin-top:var(--sp3)}
+.key{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;color:var(--ink-2)}
+.key kbd{
+  min-width:24px;padding:2px 6px;border-radius:5px;background:var(--panel-2);border:1px solid var(--line-2);
+  border-bottom-width:2px;font-family:var(--mono);font-size:11px;color:var(--ink);text-align:center;
+}
+.sns-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:var(--sp3)}
+.sns-pill{
+  display:inline-flex;align-items:center;gap:8px;padding:7px 13px 7px 7px;border-radius:var(--r4);
+  background:var(--panel-2);border:1px solid var(--line);text-decoration:none;color:var(--ink-2);
+  font-size:12px;font-weight:800;transition:border-color var(--t-fast),transform var(--t-fast);
+}
+.sns-pill:hover{border-color:var(--line-2);transform:translateY(-1px)}
+.sns-pill b{color:var(--ink)}
+.sns-pill .bd{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto}
+.sns-pill.yt .bd{background:#ff0033;color:#fff}
+.sns-pill.ig .bd{background:linear-gradient(45deg,#f9ce34,#ee2a7b 50%,#6228d7);color:#fff}
+.sns-pill .bd svg{width:15px;height:15px}
+
+/* 학번·이름 확인 팝업 */
+.stu-grid{display:grid;grid-template-columns:repeat(3,1fr) 1.6fr;gap:7px}
+@media (max-width:520px){ .stu-grid{grid-template-columns:repeat(3,1fr)} .stu-grid label:last-child{grid-column:1/-1} }
+.stu-grid label{display:flex;flex-direction:column;gap:3px}
+.stu-grid span{font-size:10.5px;font-weight:900;color:var(--ink-3)}
+.stu-grid input{
+  min-height:var(--tap);padding:0 11px;border-radius:var(--r2);border:1.5px solid var(--line);
+  background:var(--panel-2);outline:none;font-size:14px;font-weight:800;
+}
+.stu-grid input:focus{border-color:var(--brand)}
+.opt-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:var(--sp3)}
+@media (max-width:520px){ .opt-row{grid-template-columns:1fr} }
+.ck{display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:var(--r2);
+  background:var(--panel-2);border:1px solid var(--line);font-size:12px;font-weight:800;color:var(--ink-2);cursor:pointer}
+.ck input{width:17px;height:17px;accent-color:var(--brand);flex:0 0 auto}
+
+/* 토스트 */
+.toasts{position:fixed;left:50%;bottom:calc(var(--h-bar) + 14px);transform:translateX(-50%);z-index:300;
+  display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
+.toast{
+  padding:9px 16px;border-radius:var(--r4);background:var(--panel);border:1px solid var(--line-2);
+  box-shadow:var(--sh3);font-size:12.5px;font-weight:800;color:var(--ink);max-width:82vw;text-align:center;
+  animation:tIn .25s var(--spring);
+}
+.toast.ok{border-color:var(--ok);color:var(--ok)}
+.toast.bad{border-color:var(--bad);color:var(--bad)}
+@keyframes tIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ===================== 인쇄 (§10) ===================== */
+#printView{display:none}
+@media print{
+  @page{size:A4 portrait;margin:14mm 12mm}
+  html,body{height:auto!important;overflow:visible!important;background:#fff!important;color:#000!important}
+  .app,.scrim,.drawer,.modal-bd,.toasts{display:none!important}
+  #printView{display:block!important;font-family:var(--font);color:#000;background:#fff}
+  #printView h1{font-size:17pt;font-weight:900;margin-bottom:3mm}
+  #printView h2{font-size:12pt;font-weight:900;margin:6mm 0 2mm;padding-bottom:1mm;border-bottom:1.5pt solid #000}
+  #printView .phead{display:flex;gap:4mm;flex-wrap:wrap;font-size:10pt;border:1pt solid #000;padding:2.5mm 3mm;margin-bottom:4mm}
+  #printView .phead b{font-weight:900}
+  #printView .pq{border:1pt solid #666;border-radius:2mm;padding:3mm;margin-bottom:3mm;break-inside:avoid;page-break-inside:avoid}
+  #printView .pq .t{font-size:10.5pt;font-weight:900;margin-bottom:2mm}
+  #printView .pq .lbl{font-size:8.5pt;font-weight:900;margin:2mm 0 1mm}
+  #printView .pq .box{border:.6pt solid #999;border-radius:1.5mm;padding:2mm;font-size:10pt;line-height:1.7;min-height:12mm;white-space:pre-wrap}
+  #printView .pq .tags{font-size:8pt;color:#333}
+  #printView .lines{border-bottom:.6pt solid #666;height:7mm}
+  #printView table{width:100%;border-collapse:collapse;font-size:9.5pt}
+  #printView th,#printView td{border:.6pt solid #666;padding:1.6mm 2mm;text-align:left}
+  #printView th{background:#eee;font-weight:900}
+  #printView .pfoot{margin-top:6mm;padding-top:2mm;border-top:1pt solid #000;font-size:8.5pt;line-height:1.6;white-space:pre-line}
+  #printView .pnote{font-size:9pt;color:#333;margin-bottom:3mm}
+}
+
+
+/* ===================== 이온의 이동 실험 (교과서 156~157쪽) ===================== */
+.dish{
+  position:relative;height:120px;border-radius:var(--r2);overflow:hidden;
+  border:1px solid var(--line-2);background:linear-gradient(180deg,var(--panel),var(--bg-2));
+}
+.dish .plate{
+  position:absolute;left:36px;right:36px;top:10px;bottom:10px;border-radius:10px;
+  background:linear-gradient(180deg, rgba(120,175,225,.16), rgba(120,175,225,.07));
+  border:1.5px solid rgba(120,175,225,.34);
+  box-shadow:inset 0 3px 12px rgba(255,255,255,.10), inset 0 -6px 16px rgba(0,0,0,.18);
+}
+.dish .el{
+  position:absolute;top:16px;bottom:16px;width:25px;border-radius:5px;z-index:3;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:#fff;font-size:9px;font-weight:900;line-height:1.15;
+  box-shadow:0 3px 10px rgba(0,0,0,.35), inset -2px -3px 6px rgba(0,0,0,.25);
+}
+.dish .el b{font-size:16px;line-height:1}
+.dish .el.minus{left:6px;background:linear-gradient(180deg,#6ea6d4,#33628f)}
+.dish .el.plus{right:6px;background:linear-gradient(180deg,#e08a79,#a8422f)}
+.dish .blob{
+  position:absolute;top:50%;width:26px;height:26px;border-radius:50%;z-index:2;
+  display:grid;place-items:center;color:#fff;font-size:10px;font-weight:900;
+  box-shadow:0 3px 10px rgba(0,0,0,.3), inset -2px -3px 6px rgba(0,0,0,.22);
+  transition:left 1.7s cubic-bezier(.42,0,.3,1);
+}
+.dish .blob .tag{
+  position:absolute;top:-17px;left:50%;transform:translateX(-50%);white-space:nowrap;
+  font-size:9.5px;font-weight:900;color:var(--ink-2);background:var(--panel);
+  border:1px solid var(--line);border-radius:var(--r4);padding:0 6px;
+}
+.dish .spark{
+  position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity var(--t-mid);
+  background:repeating-linear-gradient(90deg, rgba(240,180,41,0) 0 18px, rgba(240,180,41,.16) 18px 22px);
+}
+.dish.on .spark{opacity:1;animation:sparkMove 1.1s linear infinite}
+@keyframes sparkMove{to{background-position-x:22px}}
+.dish-cap{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.dish-cap .c{
+  display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:800;color:var(--ink-2);
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r4);padding:3px 9px;
+}
+.dish-cap .c i{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+
+/* ===================== 동작 최소화 ===================== */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+</style>
 </head>
 <body>
+<div class="app">
 
-    <header>
-        <h1>🔬 원자의 구조 탐구 - 보어의 원자 모형</h1>
-        <select id="element-select" aria-label="원소 선택">
-            <!-- 자바스크립트로 동적 생성 -->
-        </select>
-    </header>
+<!-- ═══════════ 헤더 ═══════════ -->
+<header class="top">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true"></div>
+    <div class="brand-tx"><b>원자의 구조</b><small>송쌤과학 가상실험실</small></div>
+  </div>
 
-    <main>
-        <section id="canvas-container" aria-label="원자 모형 시뮬레이션 캔버스">
-            <canvas id="sim-canvas"></canvas>
-            <div id="tooltip"></div>
-        </section>
+  <div class="tools">
+    <button class="ico-btn" id="btnTheory" title="이론 학습 자료 (T)" aria-label="이론 학습 자료 열기">
+      <svg viewBox="0 0 24 24"><path d="M12 6.3C10.4 5 8.3 4.4 5.6 4.4c-.9 0-1.6.7-1.6 1.6v11.1c0 .9.7 1.6 1.6 1.6 2.7 0 4.8.6 6.4 1.9 1.6-1.3 3.7-1.9 6.4-1.9.9 0 1.6-.7 1.6-1.6V6c0-.9-.7-1.6-1.6-1.6-2.7 0-4.8.6-6.4 1.9z"/><path d="M12 6.3v14.3"/></svg>
+    </button>
+    <button class="ico-btn" id="btnReport" title="학습 리포트 · 학습지 (R)" aria-label="학습 리포트 열기">
+      <svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
+    </button>
+    <button class="ico-btn" id="btnHelp" title="사용 방법 (H)" aria-label="도움말 열기">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.2 9.3a2.9 2.9 0 1 1 3.6 2.8c-.6.2-.8.7-.8 1.3v.4"/><circle cx="12" cy="17" r=".95" fill="currentColor" stroke="none"/></svg>
+    </button>
+    <span class="sep" aria-hidden="true"></span>
+    <a class="ico-btn yt" href="https://www.youtube.com/@songsamscience" target="_blank" rel="noopener noreferrer" title="송쌤과학 유튜브" aria-label="송쌤과학 유튜브 채널 새 탭에서 열기">
+      <svg viewBox="0 0 24 24"><path d="M22.2 7.4a2.7 2.7 0 0 0-1.9-1.9C18.6 5 12 5 12 5s-6.6 0-8.3.5A2.7 2.7 0 0 0 1.8 7.4C1.3 9.1 1.3 12 1.3 12s0 2.9.5 4.6a2.7 2.7 0 0 0 1.9 1.9c1.7.5 8.3.5 8.3.5s6.6 0 8.3-.5a2.7 2.7 0 0 0 1.9-1.9c.5-1.7.5-4.6.5-4.6s0-2.9-.5-4.6z" fill="currentColor" stroke="none"/><path d="M10.1 15.1 15.5 12l-5.4-3.1z" fill="var(--panel)" stroke="none"/></svg>
+    </a>
+    <a class="ico-btn ig" href="https://www.instagram.com/songsamscience/" target="_blank" rel="noopener noreferrer" title="송쌤과학 인스타그램" aria-label="송쌤과학 인스타그램 새 탭에서 열기">
+      <svg viewBox="0 0 24 24"><rect x="3.2" y="3.2" width="17.6" height="17.6" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.2" cy="6.8" r="1.15" fill="currentColor" stroke="none"/></svg>
+    </a>
+    <span class="sep" aria-hidden="true"></span>
+    <button class="ico-btn" id="btnTheme" title="밝게 / 어둡게 (D)" aria-label="테마 전환">
+      <svg viewBox="0 0 24 24" id="icoTheme"><path d="M20 13.4A8.2 8.2 0 0 1 10.6 4a8.4 8.4 0 1 0 9.4 9.4z"/></svg>
+    </button>
+    <div class="snd-wrap">
+      <button class="ico-btn" id="btnSnd" title="소리 켜기 (한 번 누르면 켜짐/꺼짐)" aria-label="소리 켜기" aria-pressed="false">
+        <svg viewBox="0 0 24 24" id="icoSnd"><path d="M11 5.5 6.8 9H4v6h2.8L11 18.5z"/><path d="M15.5 9.5 20 14M20 9.5 15.5 14"/></svg>
+      </button>
+      <div class="snd-pop" id="sndPop" role="group" aria-label="소리 설정">
+        <div class="snd-row"><span class="snd-lb">상태</span><span class="snd-st" id="sndSt" role="status">소리 꺼짐</span></div>
+        <div class="snd-row"><span class="snd-lb">크기</span><input type="range" id="rgVol" min="0" max="100" step="5" aria-label="소리 크기"><span class="snd-val" id="volVal">60%</span></div>
+      </div>
+    </div>
+    <button class="ico-btn" id="btnFs" title="전체화면 (F)" aria-label="전체화면">
+      <svg viewBox="0 0 24 24" id="icoFs"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+    </button>
+  </div>
+</header>
 
-        <aside>
-            <div class="panel" id="info-panel">
-                <h2>📋 원소 정보</h2>
-                <div class="info-row"><span class="info-label">원소:</span> <span id="info-name" class="highlight">-</span></div>
-                <div class="info-row"><span class="info-label">원자번호:</span> <span id="info-num">-</span></div>
-                <div class="info-row"><span class="info-label">원자핵 전하량:</span> <span id="info-nucleus-charge" class="charge-plus">-</span></div>
-                <div class="info-row"><span class="info-label">총 전자 수:</span> <span id="info-electron-count" class="charge-minus">-</span></div>
-                <div class="info-row"><span class="info-label">전자 배치:</span> <span id="info-config" style="font-family: monospace; font-size: 1.1rem;">-</span></div>
-                
-                <div class="explanation-box">
-                    <p>💡 <strong>전기적 중성 원리</strong></p>
-                    <p style="margin-top: 8px;">원자핵 전하(<span id="desc-n-charge" style="color:#ff5252; font-weight:bold;">+0</span>)와 전자 전하(<span id="desc-e-charge" style="color:#448aff; font-weight:bold;">-0</span>)의 합이 0이 되어, 원자는 전기적으로 중성을 띱니다.</p>
-                </div>
+<!-- ═══════════ 탭 — 모두 처음부터 열려 있다 (§12) ═══════════ -->
+<nav class="tabs" role="tablist" aria-label="학습 단계">
+  <button class="tab" role="tab" aria-selected="true"  data-v="build"><span class="num">1</span>원자 만들기</button>
+  <button class="tab" role="tab" aria-selected="false" data-v="table"><span class="num">2</span>주기율표 1~30</button>
+  <button class="tab" role="tab" aria-selected="false" data-v="ion"><span class="num">3</span>이온 만들기</button>
+  <button class="tab" role="tab" aria-selected="false" data-v="quiz"><span class="num">4</span>퀴즈</button>
+  <button class="tab" role="tab" aria-selected="false" data-v="inq"><span class="num">5</span>탐구 질문</button>
+  <span class="tab-sp"></span>
+  <span class="step-dots" id="stepDots" aria-hidden="true"></span>
+</nav>
+
+<main>
+
+<!-- ─────────── 1. 원자 만들기 ─────────── -->
+<section class="view split active" id="v-build" role="tabpanel" aria-label="원자 만들기">
+  <div class="stage" id="stageBuild">
+    <canvas id="cvBuild"></canvas>
+    <div class="badges">
+      <span class="bdg p"><i></i>양성자 <b id="b-p">1</b></span>
+      <span class="bdg n"><i></i>중성자 <b id="b-n">0</b></span>
+      <span class="bdg e"><i></i>전자 <b id="b-e">1</b></span>
+      <span class="bdg" id="b-chg"><b>전하 0</b></span>
+    </div>
+    <div class="stage-tools">
+      <button class="s-btn on" id="btnPlay" title="전자 움직임 재생 / 정지 (Space)" aria-label="전자 움직임 재생 또는 정지">
+        <svg viewBox="0 0 24 24" id="icoPlay"><rect x="7" y="5" width="3.4" height="14" rx="1.1" fill="currentColor" stroke="none"/><rect x="13.6" y="5" width="3.4" height="14" rx="1.1" fill="currentColor" stroke="none"/></svg>
+      </button>
+      <button class="s-btn on" id="btnLbl" title="껍질 이름표 보이기 / 숨기기" aria-label="껍질 이름표 표시">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h11M4 17h7"/></svg>
+      </button>
+      <button class="s-btn" id="btnShot" title="원자 모형 이미지로 저장" aria-label="원자 모형 이미지 저장">
+        <svg viewBox="0 0 24 24"><path d="M4 8.5h3.2L9 6h6l1.8 2.5H20v10H4z"/><circle cx="12" cy="13" r="3.2"/></svg>
+      </button>
+    </div>
+    <button class="fuse" id="btnFuse" title="양성자·중성자를 원자핵으로 합치기 (N)">
+      <span class="glyph" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i></span>
+      <span class="lb" id="fuseLb">원자핵으로 합치기</span>
+    </button>
+    <div class="stage-name">
+      <div class="t" id="s-name">수소 원자</div>
+      <div class="s" id="s-sub">H · 원자 번호 1 · 1족 1주기</div>
+    </div>
+  </div>
+
+  <aside class="side">
+    <div class="blk">
+      <div class="blk-h"><h3>입자 수 조절</h3><span class="std">9과11-02</span></div>
+      <div class="blk-b tight">
+        <p style="font-size:11.5px;font-weight:800;color:var(--ink-3);line-height:1.55;margin-bottom:9px">
+          세 입자의 수를 바꿔 원자를 직접 만들어 보세요. ＋ − 를 누르거나 숫자를 써 넣습니다.
+        </p>
+        <div class="pcon">
+          <div class="prow p">
+            <div><div class="nm"><i></i>양성자 <em>+1</em></div><div class="ds">원소의 종류를 정합니다</div></div>
+            <div class="step" id="stP">
+              <button type="button" data-d="-1" aria-label="양성자 1개 줄이기" title="양성자 1개 줄이기 (길게 누르면 빠르게)">−</button>
+              <span class="fld"><input type="text" inputmode="numeric" id="inP" value="1" maxlength="3" aria-label="양성자 수" autocomplete="off" spellcheck="false"><u>개</u></span>
+              <button type="button" data-d="1" aria-label="양성자 1개 늘리기" title="양성자 1개 늘리기 (길게 누르면 빠르게)">＋</button>
             </div>
-
-            <div class="panel">
-                <h2>⚙️ 컨트롤 패널</h2>
-                <div class="slider-group">
-                    <label for="speed-slider">
-                        <span>전자 공전 속도</span>
-                        <span id="speed-val">1.0x</span>
-                    </label>
-                    <input type="range" id="speed-slider" min="0" max="3" step="0.1" value="1">
-                </div>
-                <div class="slider-group">
-                    <label for="scale-slider">
-                        <span>화면 확대/축소</span>
-                        <span id="scale-val">100%</span>
-                    </label>
-                    <input type="range" id="scale-slider" min="0.5" max="2" step="0.1" value="1">
-                </div>
-                <div class="controls-grid">
-                    <button id="btn-play">⏸ 일시정지</button>
-                    <button id="btn-reset">🔄 초기화</button>
-                    <button id="btn-sound">🔇 사운드 OFF</button>
-                    <button id="btn-capture">📸 화면 캡처</button>
-                    <button id="btn-fullscreen">⛶ 전체화면</button>
-                    <button id="btn-learn">📚 학습 모드</button>
-                    <button id="btn-history" style="grid-column: span 2; background: rgba(76, 175, 80, 0.3); border-color: #4caf50;">⏳ 원자 모형의 변천사</button>
-                    <button id="btn-quiz" id="btn-quiz" style="grid-column: span 2;">❓ 퀴즈 모드 (원소 맞추기)</button>
-                </div>
+          </div>
+          <div class="prow n">
+            <div><div class="nm"><i></i>중성자 <em>0</em></div><div class="ds">전하를 띠지 않습니다</div></div>
+            <div class="step" id="stN">
+              <button type="button" data-d="-1" aria-label="중성자 1개 줄이기" title="중성자 1개 줄이기">−</button>
+              <span class="fld"><input type="text" inputmode="numeric" id="inN" value="0" maxlength="3" aria-label="중성자 수" autocomplete="off" spellcheck="false"><u>개</u></span>
+              <button type="button" data-d="1" aria-label="중성자 1개 늘리기" title="중성자 1개 늘리기">＋</button>
             </div>
-        </aside>
-    </main>
-
-    <footer>
-        © 2026 송쌤과학. 2022 개정 교육과정 중학교 과학 - 물질의 구성. 교육 목적으로 제작되었습니다.
-    </footer>
-
-    <!-- 커스텀 모달: 학습 모드 -->
-    <div id="modal-learn" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>📖 보어의 원자 모형 학습</h2>
-                <button class="btn-close-icon close-modal">&times;</button>
+          </div>
+          <div class="prow e">
+            <div><div class="nm"><i></i>전자 <em>−1</em></div><div class="ds">잃거나 얻으면 이온이 됩니다</div></div>
+            <div class="step" id="stE">
+              <button type="button" data-d="-1" aria-label="전자 1개 줄이기" title="전자 1개 줄이기 (↑)">−</button>
+              <span class="fld"><input type="text" inputmode="numeric" id="inE" value="1" maxlength="3" aria-label="전자 수" autocomplete="off" spellcheck="false"><u>개</u></span>
+              <button type="button" data-d="1" aria-label="전자 1개 늘리기" title="전자 1개 늘리기 (↓)">＋</button>
             </div>
-            <div class="modal-body">
-                <p><strong>원자(Atom)</strong>는 물질을 구성하는 기본 입자로, 다음과 같은 구조를 가집니다.</p>
-                <ul>
-                    <li><strong>원자핵 (Nucleus):</strong> 원자의 중심에 위치하며 <strong>(+)전하</strong>를 땝니다. 크기는 매우 작지만 원자 질량의 대부분을 차지합니다.</li>
-                    <li><strong>전자 (Electron):</strong> 원자핵 주위를 돌고 있으며 <strong>(-)전하</strong>를 땝니다. 질량이 매우 가볍습니다.</li>
-                </ul>
-                <p><strong>⚡ 전기적 중성</strong><br>한 원자에서 원자핵의 (+) 전하량과 전자들의 총 (-) 전하량의 절댓값이 같으므로, 원자는 전체적으로 전기적 중성입니다.</p>
-                <p><strong>궤도 (전자껍질) 규칙</strong><br>전자는 원자핵 주위의 특정한 궤도(전자껍질)에 배치됩니다. 안쪽부터 K껍질(최대 2개), L껍질(최대 8개), M껍질(최대 8개) 순으로 채워집니다.</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-primary close-modal" style="padding: 10px 20px;">이해했습니다</button>
-            </div>
+          </div>
         </div>
+        <div class="verdict neu" id="verdict"><span class="em">⚖️</span><span class="tx"></span></div>
+        <div class="btn-row" style="margin-top:9px">
+          <button class="btn sm" id="btnNeutral">↺ 중성 원자로</button>
+          <button class="btn sm" id="btnRandom">🎲 무작위 원소</button>
+          <button class="btn sm" id="btnMission">🧩 원자 만들기 도전</button>
+        </div>
+        <div id="missionBox" style="margin-top:10px;display:none"></div>
+      </div>
     </div>
 
-    <!-- 커스텀 모달: 원자 모형 변천사 -->
-    <div id="modal-history" class="modal-overlay">
-        <div class="modal-content" style="max-width: 900px; width: 95%;">
-            <div class="modal-header">
-                <h2>⏳ 원자 모형의 변천 과정</h2>
-                <button class="btn-close-icon close-modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="history-timeline">
-                    <!-- 1. 돌턴 -->
-                    <div class="history-item">
-                        <div class="model-circle model-dalton"></div>
-                        <h3>돌턴</h3>
-                        <p>더 이상 쪼개지지 않는 단단한 공 모형</p>
-                    </div>
-                    <!-- 2. 톰슨 -->
-                    <div class="history-item">
-                        <div class="model-circle model-thomson">
-                            <span class="t-plus" style="top: 15px; left: 50%; transform: translateX(-50%);">+</span>
-                            <span class="t-plus" style="bottom: 20px; left: 15px;">+</span>
-                            <span class="t-plus" style="bottom: 20px; right: 15px;">+</span>
-                            <span class="t-minus" style="top: 25px; left: 12px;">-</span>
-                            <span class="t-minus" style="top: 25px; right: 12px;">-</span>
-                            <span class="t-minus" style="bottom: 12px; left: 50%; transform: translateX(-50%);">-</span>
-                        </div>
-                        <h3>톰슨</h3>
-                        <p>(+)전하를 띤 원자에 (-)전하를 띤 전자가 박힌 모형</p>
-                    </div>
-                    <!-- 3. 러더퍼드 -->
-                    <div class="history-item">
-                        <div class="model-circle model-rutherford">
-                            <div class="model-core"></div>
-                            <div class="r-orbit" style="transform: rotate(0deg);"></div>
-                            <div class="r-orbit" style="transform: rotate(60deg);"></div>
-                            <div class="r-orbit" style="transform: rotate(120deg);"></div>
-                            <!-- 전자 배치 -->
-                            <div class="orbit-e" style="top: 40px; left: 5px;"></div>
-                            <div class="orbit-e" style="top: 15px; left: 65px;"></div>
-                            <div class="orbit-e" style="top: 65px; left: 65px;"></div>
-                        </div>
-                        <h3>러더퍼드</h3>
-                        <p>(+)전하의 원자핵이 중심에 있고 그 주위를 전자가 도는 모형</p>
-                    </div>
-                    <!-- 4. 보어 -->
-                    <div class="history-item">
-                        <div class="model-circle model-bohr">
-                            <div class="model-core"></div>
-                            <div class="model-orbit orbit-1"></div>
-                            <div class="model-orbit orbit-2"></div>
-                            <!-- 안쪽 궤도 전자 -->
-                            <div class="orbit-e" style="top: 22.5px; left: 40px;"></div>
-                            <div class="orbit-e" style="top: 57.5px; left: 40px;"></div>
-                            <!-- 바깥쪽 궤도 전자 -->
-                            <div class="orbit-e" style="top: 10px; left: 40px;"></div>
-                            <div class="orbit-e" style="top: 70px; left: 40px;"></div>
-                            <div class="orbit-e" style="top: 40px; left: 10px;"></div>
-                            <div class="orbit-e" style="top: 40px; left: 70px;"></div>
-                        </div>
-                        <h3>보어</h3>
-                        <p>전자가 원자핵 주위의 일정한 궤도를 따라 운동하는 모형</p>
-                    </div>
-                    <!-- 5. 보른(현대) -->
-                    <div class="history-item">
-                        <div class="model-circle model-modern">
-                            <div class="model-core" style="width: 8px; height: 8px;"></div>
-                        </div>
-                        <h3>보른(현대)</h3>
-                        <p>전자가 원자핵 주위에 구름처럼 퍼져 있는 모형</p>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-primary close-modal" style="padding: 10px 20px;">닫기</button>
-            </div>
-        </div>
+    <div class="blk">
+      <div class="blk-h"><h3>이 원자는 무엇일까?</h3><span class="hint">양성자 수 = 원자 번호</span></div>
+      <div class="blk-b tight" id="idBox"></div>
     </div>
 
-    <!-- 커스텀 모달: 알림용 -->
-    <div id="modal-alert" class="modal-overlay">
-        <div class="modal-content" style="max-width: 400px;">
-            <div class="modal-header">
-                <h2 id="alert-title">알림</h2>
-                <button class="btn-close-icon close-modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p id="alert-msg" style="text-align: center; font-size: 1.1rem; font-weight: 500;"></p>
-            </div>
-            <div class="modal-footer" style="justify-content: center;">
-                <button class="btn-primary close-modal" style="width: 100%; padding: 12px;">확인</button>
-            </div>
+    <div class="blk">
+      <div class="blk-h"><h3>총전하량 계산</h3><span class="hint">전기적으로 중성인가?</span></div>
+      <div class="blk-b tight">
+        <div class="qform">
+          원자 1개의 <span class="hl-p">양성자 총전하량</span> <span class="op">=</span> (+)전하 <span class="op">×</span> 양성자의 수<br>
+          원자 1개의 <span class="hl-e">전자 총전하량</span> <span class="op">=</span> (−)전하 <span class="op">×</span> 전자의 수
         </div>
+        <div class="seg" id="segUnit" style="margin-top:9px">
+          <button aria-pressed="true" data-u="rel">상대 전하 (+1 / −1)</button>
+          <button aria-pressed="false" data-u="c">실제 전하량 (C)</button>
+        </div>
+        <div class="calc" id="calcBox"></div>
+      </div>
     </div>
 
+    <div class="blk">
+      <div class="blk-h"><h3>전자 껍질</h3><span class="hint">K L M N …</span></div>
+      <div class="blk-b tight">
+        <div id="shellBox"></div>
+        <div style="margin-top:9px">
+          <div class="kv"><span class="k">전자 껍질 배치</span><span class="v" id="k-shell">1</span></div>
+          <div class="kv"><span class="k">전자 껍질 수</span><span class="v" id="k-nsh">1개</span></div>
+          <div class="kv"><span class="k">가장 바깥 껍질의 전자 수</span><span class="v" id="k-val">1개</span></div>
+        </div>
+        <p style="font-size:10.5px;font-weight:700;color:var(--ink-3);line-height:1.55;margin-top:8px">
+          전자 껍질은 원자핵에서 가까운 순서대로 <b>K, L, M, N</b> … 이라고 부릅니다.
+        </p>
+      </div>
+    </div>
+
+    <div class="blk">
+      <div class="blk-h"><h3>보기 설정</h3></div>
+      <div class="blk-b tight">
+        <div class="sw-row"><span class="t">양성자에 ＋, 전자에 − 표시</span><button class="sw" id="swSign" aria-pressed="true" aria-label="부호 표시"></button></div>
+        <div class="sw-row"><span class="t">원자핵 크게 보기</span><button class="sw" id="swBig" aria-pressed="false" aria-label="원자핵 크게"></button></div>
+        <div class="sw-row"><span class="t">전자 이동 궤적</span><button class="sw" id="swTrail" aria-pressed="false" aria-label="전자 궤적"></button></div>
+        <div class="sw-row"><span class="t">전자 움직임 빠르게</span><button class="sw" id="swFast" aria-pressed="false" aria-label="전자 속도"></button></div>
+      </div>
+    </div>
+  </aside>
+</section>
+
+<!-- ─────────── 2. 주기율표 1~30 ─────────── -->
+<section class="view" id="v-table" role="tabpanel" aria-label="주기율표">
+  <div class="pt-wrap">
+    <div class="btn-row" style="align-items:center">
+      <span style="font-size:12.5px;font-weight:900;letter-spacing:-.02em">원소를 누르면 그 원자를 바로 만들어 봅니다</span>
+      <span class="std" style="font-size:9.5px;font-weight:900;color:var(--brand);background:var(--brand-soft);padding:3px 7px;border-radius:8px">9과11-03</span>
+      <span style="margin-left:auto"></span>
+      <button class="btn sm" id="btnFam1">1족 원소 비교</button>
+      <button class="btn sm" id="btnFam18">18족 원소 비교</button>
+    </div>
+    <div style="overflow-x:auto;overscroll-behavior-x:contain;padding-bottom:4px">
+      <div class="ptable" id="ptable"></div>
+    </div>
+    <div class="pt-legend" id="ptLegend"></div>
+    <div class="note">
+      가로줄 7개를 <b>주기</b>, 세로줄 18개를 <b>족</b>이라고 합니다. 원소는 <b>양성자 수(원자 번호)</b> 순서로 배치되고,
+      <b>같은 족</b>에는 성질이 비슷한 원소가 모여 있습니다. 칸에 마우스를 올리면 같은 족 원소가 함께 빛납니다.
+    </div>
+    <div class="fam-grid" id="famGrid"></div>
+  </div>
+</section>
+
+<!-- ─────────── 3. 이온 만들기 ─────────── -->
+<section class="view split" id="v-ion" role="tabpanel" aria-label="이온 만들기">
+  <div class="stage" id="stageIon">
+    <canvas id="cvIon"></canvas>
+    <div class="badges">
+      <span class="bdg p"><i></i>양성자 <b id="i-p">11</b></span>
+      <span class="bdg e"><i></i>전자 <b id="i-e">11</b></span>
+      <span class="bdg" id="i-chg"><b>전하 0</b></span>
+    </div>
+    <div class="stage-tools">
+      <button class="s-btn" id="btnLose" title="전자 1개 잃기 (↑)" aria-label="전자 1개 잃기">
+        <svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+      </button>
+      <button class="s-btn" id="btnGain" title="전자 1개 얻기 (↓)" aria-label="전자 1개 얻기">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+      </button>
+      <button class="s-btn" id="btnIonReset" title="원래 원자로 되돌리기" aria-label="원래 원자로 되돌리기">
+        <svg viewBox="0 0 24 24"><path d="M4.5 12a7.5 7.5 0 1 0 2.4-5.5"/><path d="M4 4.5V9h4.5"/></svg>
+      </button>
+    </div>
+    <div class="stage-name">
+      <div class="t" id="i-name">나트륨 원자</div>
+      <div class="s" id="i-sub">전자를 잃거나 얻어 이온을 만들어 보세요</div>
+    </div>
+  </div>
+
+  <aside class="side">
+    <div class="blk">
+      <div class="blk-h"><h3>이온 만들기</h3><span class="std">9과11-04</span></div>
+      <div class="blk-b tight">
+        <div class="btn-row">
+          <button class="btn" id="btnLose2" style="flex:1 1 0">− 전자 잃기</button>
+          <button class="btn" id="btnGain2" style="flex:1 1 0">＋ 전자 얻기</button>
+        </div>
+        <div class="btn-row" style="margin-top:6px">
+          <button class="btn sm blk" id="btnAutoIon">✨ 이 원소의 대표 이온 만들기</button>
+        </div>
+        <div class="verdict neu" id="ionVerdict"><span class="em">⚖️</span><span class="tx"></span></div>
+        <div style="margin-top:9px">
+          <div class="kv"><span class="k">잃거나 얻은 전자 수</span><span class="v" id="i-delta">0개</span></div>
+          <div class="kv"><span class="k">이온의 전하</span><span class="v" id="i-charge">0</span></div>
+          <div class="kv"><span class="k">전자 껍질 배치</span><span class="v" id="i-shell">2 8 1</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <div class="blk-h"><h3>이온식 읽는 법</h3><span class="hint">교과서 그림 Ⅳ-12</span></div>
+      <div class="blk-b tight" id="ionForm"></div>
+    </div>
+
+    <div class="blk">
+      <div class="blk-h"><h3>전기력을 이용한 이온의 이동</h3><span class="hint">교과서 탐구</span></div>
+      <div class="blk-b tight">
+        <div class="seg" id="segMig" style="margin-bottom:9px">
+          <button aria-pressed="true" data-m="my">내 이온</button>
+          <button aria-pressed="false" data-m="cu">황산 구리(Ⅱ)</button>
+          <button aria-pressed="false" data-m="mn">과망가니즈산 칼륨</button>
+        </div>
+        <div id="migBox"></div>
+        <button class="btn sm blk pri" id="btnMig" style="margin-top:9px">⚡ 전류 흘려 주기</button>
+        <div id="migNote" style="margin-top:9px"></div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <div class="blk-h"><h3>원소 고르기</h3><span class="hint">1~30번</span></div>
+      <div class="blk-b tight">
+        <div class="btn-row" id="ionPick"></div>
+      </div>
+    </div>
+  </aside>
+</section>
+
+<!-- ─────────── 4. 퀴즈 ─────────── -->
+<section class="view" id="v-quiz" role="tabpanel" aria-label="퀴즈">
+  <div class="quiz-wrap">
+    <div class="qhead">
+      <span class="score-pill">⭐ <span id="qScore">0</span> / <span id="qTotal">0</span></span>
+      <div class="prog"><i id="qProg" style="width:0%"></i></div>
+      <button class="btn sm" id="qRestart">처음부터 다시</button>
+    </div>
+    <div id="qCard"></div>
+    <div class="blk" id="qWrongBlk" style="display:none">
+      <div class="blk-h"><h3>다시 살펴볼 문제</h3><span class="hint">리포트의 오답 노트에 함께 실립니다</span></div>
+      <div class="blk-b tight"><div class="wrong-list" id="qWrong"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── 5. 탐구 질문 ─────────── -->
+<section class="view" id="v-inq" role="tabpanel" aria-label="탐구 질문">
+  <div class="inq-wrap">
+    <div class="inq-top">
+      <span>💾 답안은 <b style="color:var(--ink-2)">자동 저장</b>되며 리포트에 인쇄됩니다</span>
+      <span class="cnt" id="inqCnt">0 / 5 작성</span>
+    </div>
+    <div id="inqList"></div>
+  </div>
+</section>
+
+</main>
+
+<!-- ═══════════ 컨트롤 바 ═══════════ -->
+<div class="bar">
+  <span class="guide" id="guide"></span>
+  <span class="right">
+    <span class="foot-mini">🧪 송쌤과학 · ⓒ 2026 송세호 | 아주중학교</span>
+    <button class="btn sm save" id="btnSave">결과 PDF 저장</button>
+  </span>
+</div>
+</div>
+
+<!-- ═══════════ 이론 학습 드로어 (§8) ═══════════ -->
+<div class="scrim" id="thScrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="이론 학습 자료">
+  <div class="drawer-h">
+    <h2>이론 한 장씩 — 원자의 구조</h2>
+    <span class="drawer-pg" id="thPg">1 / 7</span>
+    <button class="btn sm" id="thClose" aria-label="이론 닫기">닫기 ✕</button>
+  </div>
+  <div class="drawer-b" id="thBody"></div>
+  <div class="drawer-f">
+    <button class="btn sm" id="thPrev">‹ 이전</button>
+    <span class="dots" id="thDots"></span>
+    <button class="btn sm pri" id="thNext">다음 ›</button>
+  </div>
+</aside>
+
+<!-- ═══════════ 도움말 ═══════════ -->
+<div class="modal-bd" id="mHelp">
+  <div class="modal">
+    <div class="modal-h"><h2>사용 방법</h2><button class="btn sm" data-close>닫기 ✕</button></div>
+    <div class="modal-b">
+      <div class="hlist">
+        <div class="hitem"><div class="no">1</div><div class="tx"><b>원자 만들기</b> — <b>양성자·중성자·전자</b> 세 칸의 ＋ − 를 눌러 수를 바꾸면 화면 가운데 원자가 바로 다시 만들어집니다. 숫자를 직접 써 넣어도 되고, 칸을 누른 뒤 <b>↑ ↓</b> 로도 조절됩니다.</div></div>
+        <div class="hitem"><div class="no">2</div><div class="tx"><b>원자핵으로 합치기</b> — 무대 왼쪽 아래 버튼(또는 <b>N</b>)을 누르면 낱낱의 양성자·중성자가 가운데로 모여 <b>하나의 원자핵</b>이 되고, 원자핵의 전하 <b>+양성자 수</b>가 나타납니다. 원자핵을 직접 눌러도 됩니다.</div></div>
+        <div class="hitem"><div class="no">3</div><div class="tx"><b>주기율표 1~30</b> — 원소 기호를 크게 보여 줍니다. 칸에 마우스를 올리면 <b>같은 족</b> 원소가 함께 빛나고, 누르면 그 원자를 바로 만들어 봅니다.</div></div>
+        <div class="hitem"><div class="no">4</div><div class="tx"><b>이온 만들기</b> — 전자를 잃거나 얻으면 이온식과 이름이 자동으로 만들어집니다. <b>전기력을 이용한 이온의 이동</b>은 교과서 탐구(황산 구리(Ⅱ)·과망가니즈산 칼륨)를 그대로 재현합니다.</div></div>
+        <div class="hitem"><div class="no">5</div><div class="tx"><b>탐구 질문</b> — 질문을 누르면 답을 쓰는 칸이 열립니다. 자동 저장되고, <b>20자 이상</b> 쓰면 모범 답안을 열 수 있습니다. <b>모범 답안을 본 문항은 답안을 더 고칠 수 없습니다</b> 🔒. <b>힌트는 답안을 잠그지 않아</b> 언제든 열어 보고 이어서 고쳐 쓸 수 있어요.</div></div>
+        <div class="hitem"><div class="no">6</div><div class="tx"><b>학습 리포트</b> — 오른쪽 위 📄 (또는 <b>R</b>). 학번·이름을 확인한 뒤 서술형 답안·모범 답안 비교, 퀴즈 오답 노트, <b>빈 학습지</b>를 인쇄하거나 PDF로 저장합니다. 인쇄 창에서 <b>대상</b>을 ‘PDF로 저장’으로 고르세요.</div></div>
+        <div class="hitem"><div class="no">7</div><div class="tx"><b>소리</b> — 오른쪽 위 스피커를 <b>한 번 누르면 바로 켜지고 꺼집니다</b>. 소리 크기 막대가 잠깐 떴다가 저절로 닫혀요. 기본은 꺼짐입니다.</div></div>
+      </div>
+      <div class="keys">
+        <div class="key"><kbd>1</kbd>~<kbd>5</kbd> 탭 이동</div>
+        <div class="key"><kbd>N</kbd> 원자핵 합치기 / 펼치기</div>
+        <div class="key"><kbd>↑</kbd><kbd>↓</kbd> 전자 잃기 / 얻기</div>
+        <div class="key"><kbd>←</kbd><kbd>→</kbd> 이전 / 다음 원소</div>
+        <div class="key"><kbd>Space</kbd> 전자 움직임</div>
+        <div class="key"><kbd>T</kbd> 이론 자료</div>
+        <div class="key"><kbd>R</kbd> 학습 리포트</div>
+        <div class="key"><kbd>H</kbd> 도움말</div>
+        <div class="key"><kbd>D</kbd> 밝게 / 어둡게</div>
+        <div class="key"><kbd>F</kbd> 전체화면 (나가기 <kbd>Esc</kbd>)</div>
+      </div>
+      <div class="sns-row">
+        <a class="sns-pill yt" href="https://www.youtube.com/@songsamscience" target="_blank" rel="noopener noreferrer">
+          <span class="bd"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.2 7.4a2.7 2.7 0 0 0-1.9-1.9C18.6 5 12 5 12 5s-6.6 0-8.3.5A2.7 2.7 0 0 0 1.8 7.4C1.3 9.1 1.3 12 1.3 12s0 2.9.5 4.6a2.7 2.7 0 0 0 1.9 1.9c1.7.5 8.3.5 8.3.5s6.6 0 8.3-.5a2.7 2.7 0 0 0 1.9-1.9c.5-1.7.5-4.6.5-4.6s0-2.9-.5-4.6z"/><path d="M10.1 15.1 15.5 12l-5.4-3.1z" fill="#fff"/></svg></span>
+          <span>YouTube <b>@songsamscience</b></span>
+        </a>
+        <a class="sns-pill ig" href="https://www.instagram.com/songsamscience/" target="_blank" rel="noopener noreferrer">
+          <span class="bd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.2" y="3.2" width="17.6" height="17.6" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.2" cy="6.8" r="1.15" fill="currentColor" stroke="none"/></svg></span>
+          <span>Instagram <b>@songsamscience</b></span>
+        </a>
+      </div>
+      <div class="note" style="margin-top:16px;white-space:pre-line">🧪 송쌤과학 (Song Ssaem Science)
+ⓒ 2026 송세호 | 아주중학교
+📺 YouTube: @songsamscience  📷 Instagram: @songsamscience
+⚠ 무단 복제·상업적 이용 금지</div>
+    </div>
+    <div class="modal-f">
+      <span style="margin-right:auto;font-size:10.5px;font-weight:800;color:var(--ink-3);align-self:center">입력한 정보와 답안은 <b>이 컴퓨터에만</b> 저장됩니다</span>
+      <button class="btn sm" id="btnWipe">모든 데이터 초기화</button>
+      <button class="btn sm pri" data-close>닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 학번·이름 확인 (§10) ═══════════ -->
+<div class="modal-bd" id="mStu">
+  <div class="modal" style="max-width:470px">
+    <div class="modal-h"><h2>학번과 이름을 확인해 주세요</h2><button class="btn sm" data-close>닫기 ✕</button></div>
+    <div class="modal-b">
+      <p style="font-size:12.5px;font-weight:700;color:var(--ink-2);line-height:1.7;margin-bottom:12px">
+        저장하는 산출물의 <b>첫 장과 파일 이름</b>에 학번·이름·날짜가 함께 인쇄됩니다.
+      </p>
+      <div class="stu-grid">
+        <label><span>학년</span><input id="sGrade" inputmode="numeric" maxlength="2" placeholder="2" autocomplete="off"></label>
+        <label><span>반</span><input id="sCls" inputmode="numeric" maxlength="3" placeholder="4" autocomplete="off"></label>
+        <label><span>번호</span><input id="sNo" inputmode="numeric" maxlength="3" placeholder="12" autocomplete="off"></label>
+        <label><span>이름</span><input id="sName" maxlength="20" placeholder="홍길동" autocomplete="off"></label>
+      </div>
+      <div class="note" style="margin-top:12px">🔒 입력한 정보는 <b>이 컴퓨터에만</b> 저장되고 서버로 보내지 않습니다.</div>
+    </div>
+    <div class="modal-f">
+      <button class="btn" data-close>취소</button>
+      <button class="btn save" id="stuGo">이대로 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 리포트 · 학습지 (§10) ═══════════ -->
+<div class="modal-bd" id="mRep">
+  <div class="modal" style="max-width:660px">
+    <div class="modal-h"><h2>학습 리포트 · 학습지</h2><button class="btn sm" data-close>닫기 ✕</button></div>
+    <div class="modal-b">
+      <p style="font-size:12.5px;font-weight:700;color:var(--ink-2);line-height:1.7">인쇄할 내용을 고른 뒤 <b>인쇄 / PDF 저장</b>을 누르세요. 인쇄 창에서 <b>대상</b>을 ‘PDF로 저장’으로 고르면 파일로 남습니다.</p>
+      <div class="opt-row">
+        <label class="ck"><input type="checkbox" id="ckInq" checked>탐구 질문 서술형 답안</label>
+        <label class="ck"><input type="checkbox" id="ckAns" checked>모범 답안 함께 인쇄</label>
+        <label class="ck"><input type="checkbox" id="ckQuiz" checked>퀴즈 결과와 오답 해설</label>
+        <label class="ck"><input type="checkbox" id="ckModel" checked>내가 만든 원자 기록</label>
+        <label class="ck"><input type="checkbox" id="ckBlank">빈 학습지로 인쇄 (답 없이)</label>
+        <label class="ck"><input type="checkbox" id="ckKey">교사용 정답지 포함</label>
+      </div>
+      <div class="note" style="margin-top:12px">
+        <b>빈 학습지</b>는 답을 아직 쓰지 않아도 인쇄할 수 있어요 — 수업 전 배부용으로 쓰세요.
+        오답이 없으면 오답 학습지 대신 빈 학습지로 한 번 더 연습할 수 있습니다.
+      </div>
+    </div>
+    <div class="modal-f">
+      <button class="btn" data-close>닫기</button>
+      <button class="btn save" id="repPrint">인쇄 / PDF 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 모범 답안 잠금 확인 (§9) ═══════════ -->
+<div class="modal-bd" id="mLock">
+  <div class="modal" style="max-width:430px">
+    <div class="modal-b" style="text-align:center">
+      <div style="font-size:34px;margin-bottom:8px">🔒</div>
+      <h2 style="font-size:16px;font-weight:900;letter-spacing:-.03em;margin-bottom:9px">모범 답안을 볼까요?</h2>
+      <p style="font-size:12.5px;font-weight:700;color:var(--ink-2);line-height:1.75">
+        모범 답안을 보면 이 문항의 <b>내 답안은 더 이상 고칠 수 없어요.</b><br>
+        지금까지 쓴 답안은 그대로 저장되어 리포트에 인쇄됩니다.
+      </p>
+    </div>
+    <div class="modal-f" style="justify-content:center">
+      <button class="btn" data-close>조금 더 써 볼게요</button>
+      <button class="btn pri" id="lockYes">모범 답안 보고 잠그기</button>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+<div id="printView"></div>
 <script>
-/**
- * ==========================================
- * 1. 데이터 정의 (원자번호 1~20번 원소)
- * ==========================================
- */
-const elementNames = [
-    "H(수소)", "He(헬륨)", "Li(리튬)", "Be(베릴륨)", "B(붕소)", 
-    "C(탄소)", "N(질소)", "O(산소)", "F(플루오린)", "Ne(네온)", 
-    "Na(나트륨)", "Mg(마그네슘)", "Al(알루미늄)", "Si(규소)", "P(인)", 
-    "S(황)", "Cl(염소)", "Ar(아르곤)", "K(칼륨)", "Ca(칼슘)"
+"use strict";
+/* =====================================================================
+   송쌤과학 가상실험실 — 원자의 구조
+   2022 개정 중학교 과학 [9과11-01] [9과11-02] [9과11-03] [9과11-04]
+   교과서: 천재교육(임) 중학교 과학2 Ⅳ. 물질의 구성
+   ===================================================================== */
+
+/* ---------- 원소 자료 (1~30번) ----------
+   sym 기호 · kor 한글 이름 · eng 영어 이름 · n 중성자 수(자연에 가장 흔한 동위원소)
+   sh 전자 껍질 배치 · g 족 · pr 주기 · cat 분류 · ion 대표 이온의 전하(없으면 null)
+   중성자 수는 가장 많은 동위원소 기준 (예: 탄소 ¹²C → 6, 염소 ³⁵Cl → 18)            */
+const RAW = [
+ ["H","수소","Hydrogen",0,[1],1,1,"non",1],
+ ["He","헬륨","Helium",2,[2],18,1,"nob",null],
+ ["Li","리튬","Lithium",4,[2,1],1,2,"met",1],
+ ["Be","베릴륨","Beryllium",5,[2,2],2,2,"met",2],
+ ["B","붕소","Boron",6,[2,3],13,2,"mtl",null],
+ ["C","탄소","Carbon",6,[2,4],14,2,"non",null],
+ ["N","질소","Nitrogen",7,[2,5],15,2,"non",-3],
+ ["O","산소","Oxygen",8,[2,6],16,2,"non",-2],
+ ["F","플루오린","Fluorine",10,[2,7],17,2,"non",-1],
+ ["Ne","네온","Neon",10,[2,8],18,2,"nob",null],
+ ["Na","나트륨","Sodium",12,[2,8,1],1,3,"met",1],
+ ["Mg","마그네슘","Magnesium",12,[2,8,2],2,3,"met",2],
+ ["Al","알루미늄","Aluminium",14,[2,8,3],13,3,"met",3],
+ ["Si","규소","Silicon",14,[2,8,4],14,3,"mtl",null],
+ ["P","인","Phosphorus",16,[2,8,5],15,3,"non",-3],
+ ["S","황","Sulfur",16,[2,8,6],16,3,"non",-2],
+ ["Cl","염소","Chlorine",18,[2,8,7],17,3,"non",-1],
+ ["Ar","아르곤","Argon",22,[2,8,8],18,3,"nob",null],
+ ["K","칼륨","Potassium",20,[2,8,8,1],1,4,"met",1],
+ ["Ca","칼슘","Calcium",20,[2,8,8,2],2,4,"met",2],
+ ["Sc","스칸듐","Scandium",24,[2,8,9,2],3,4,"met",3],
+ ["Ti","타이타늄","Titanium",26,[2,8,10,2],4,4,"met",null],
+ ["V","바나듐","Vanadium",28,[2,8,11,2],5,4,"met",null],
+ ["Cr","크로뮴","Chromium",28,[2,8,13,1],6,4,"met",3],
+ ["Mn","망가니즈","Manganese",30,[2,8,13,2],7,4,"met",2],
+ ["Fe","철","Iron",30,[2,8,14,2],8,4,"met",2],
+ ["Co","코발트","Cobalt",32,[2,8,15,2],9,4,"met",2],
+ ["Ni","니켈","Nickel",30,[2,8,16,2],10,4,"met",2],
+ ["Cu","구리","Copper",34,[2,8,18,1],11,4,"met",2],
+ ["Zn","아연","Zinc",34,[2,8,18,2],12,4,"met",2]
 ];
+const CAT = { met:{n:"금속",c:"#c9713f"}, mtl:{n:"준금속",c:"#6e8f7b"},
+              non:{n:"비금속",c:"#3d7ea6"}, nob:{n:"비활성 기체",c:"#7a6bb0"} };
+const ELS = RAW.map((r,i)=>({z:i+1, sym:r[0], kor:r[1], eng:r[2], n:r[3],
+                             sh:r[4], g:r[5], pr:r[6], cat:r[7], ion:r[8], c:CAT[r[7]].c}));
+const EL   = z => ELS[z-1];
+const ZMAX = 30, NMAX = 60;
+const eMax = z => Math.min(30, z + 4);
 
-const elementsData = elementNames.map((name, index) => {
-    const num = index + 1;
-    // 전자 배치 로직 (K: 최대 2, L: 최대 8, M: 최대 8, N: 최대 2)
-    const k = Math.min(num, 2);
-    const l = Math.min(Math.max(num - 2, 0), 8);
-    const m = Math.min(Math.max(num - 10, 0), 8);
-    const n = Math.max(num - 18, 0);
-    
-    let configStr = `K(${k})`;
-    if (l > 0) configStr += `, L(${l})`;
-    if (m > 0) configStr += `, M(${m})`;
-    if (n > 0) configStr += `, N(${n})`;
+/* 음이온 이름 — 원소 이름이 ‘소’로 끝나면 ‘소’를 떼고 ‘~화 이온’ (교과서 155쪽) */
+const ANION_KOR = { O:"산화", Cl:"염화", F:"플루오린화", S:"황화", N:"질화", P:"인화", H:"수소화" };
+function anionName(e){ return (ANION_KOR[e.sym] || e.kor.replace(/소$/,"") + "화") + " 이온"; }
+function ionName(e, c){
+  if(c === 0) return e.kor + " 원자";
+  return c > 0 ? e.kor + " 이온" : anionName(e);
+}
 
-    return { 
-        num, 
-        name: `${num}. ${name}`, 
-        symbol: name.split('(')[0], 
-        k, l, m, n, 
-        configStr 
+/* ---------- 짧은 유틸 ---------- */
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const SUP = {"0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹","+":"⁺","-":"⁻"};
+const supTx = s => String(s).split("").map(c=>SUP[c]||c).join("");
+/* 잃거나 얻은 전자 수가 1개일 때는 숫자를 생략한다 (교과서 155쪽) */
+function ionTx(sym, c){
+  if(c === 0) return sym;
+  const n = Math.abs(c);
+  return sym + supTx((n === 1 ? "" : String(n)) + (c > 0 ? "+" : "-"));
+}
+function chgTx(c){ return c === 0 ? "0" : (c > 0 ? "+" : "−") + Math.abs(c); }
+const SHELL = i => "KLMNOPQ"[i] || ("N" + (i+1));
+/* 전자 수에 맞는 껍질 배치 — 잃으면 바깥부터 비우고, 얻으면 같은 전자 수 원소의 배치를 따른다 */
+function shellsFor(z, ne){
+  if(ne <= 0) return [];
+  if(ne === z) return EL(z).sh.slice();
+  if(ne < z){
+    const sh = EL(z).sh.slice();
+    let rem = z - ne;
+    while(rem > 0 && sh.length){
+      const l = sh.length - 1, t = Math.min(rem, sh[l]);
+      sh[l] -= t; rem -= t;
+      if(sh[l] === 0) sh.pop();
+    }
+    return sh;
+  }
+  return ne <= ZMAX ? EL(ne).sh.slice() : [2,8,8,ne-18];
+}
+function josa(w, pair){                       /* 은/는 · 이/가 — 받침에 맞춰 고른다 */
+  const [a,b] = pair.split("/");
+  const ch = w.charCodeAt(w.length-1);
+  if(ch < 0xAC00 || ch > 0xD7A3) return b;
+  return ((ch - 0xAC00) % 28) ? a : b;
+}
+/* 저장은 localStorage 만 사용하고, 막혀 있어도 실험은 계속된다 */
+const LS = {
+  get(k, d){ try{ const v = localStorage.getItem("ssv-atom-"+k); return v === null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem("ssv-atom-"+k, JSON.stringify(v)); }catch(e){} },
+  del(k){ try{ localStorage.removeItem("ssv-atom-"+k); }catch(e){} }
+};
+let toastT = [];
+function toast(msg, kind){
+  const box = $("#toasts");
+  const d = document.createElement("div");
+  d.className = "toast" + (kind ? " " + kind : "");
+  d.innerHTML = msg;
+  box.appendChild(d);
+  toastT.push(setTimeout(()=>{ d.style.opacity = "0"; d.style.transition = "opacity .3s"; setTimeout(()=>d.remove(), 320); }, 2200));
+  while(box.children.length > 3) box.firstChild.remove();
+}
+
+/* ---------- 소리 — 마스터 GainNode 하나를 거친다 (§11) ---------- */
+const SFX = { on:false, vol:.6, ctx:null, gain:null };
+function sfxInit(){
+  if(SFX.ctx) return SFX.ctx;
+  try{
+    SFX.ctx  = new (window.AudioContext || window.webkitAudioContext)();
+    SFX.gain = SFX.ctx.createGain();
+    SFX.gain.gain.value = SFX.vol;
+    SFX.gain.connect(SFX.ctx.destination);
+  }catch(e){}
+  return SFX.ctx;
+}
+function tone(f1, f2, at, dur, type, vol){
+  if(!SFX.on) return;
+  const ctx = sfxInit(); if(!ctx) return;
+  if(ctx.state === "suspended") ctx.resume();
+  const t = ctx.currentTime + at;
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = type || "sine";
+  o.frequency.setValueAtTime(f1, t);
+  if(f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol || .22, t + .012);
+  g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g); g.connect(SFX.gain);
+  o.start(t); o.stop(t + dur + .02);
+}
+const sfx = {
+  tick(){ tone(520, 640, 0, .06, "triangle", .13); },
+  step(){ tone(380, 460, 0, .07, "sine", .14); },
+  fuse(){ tone(180, 620, 0, .3, "sine", .22); tone(90, 240, .04, .34, "triangle", .14); },
+  split(){ tone(620, 180, 0, .26, "sine", .2); },
+  ok(){ tone(660, 0, 0, .1, "sine", .2); tone(990, 0, .09, .16, "sine", .18); },
+  no(){ tone(200, 150, 0, .2, "sawtooth", .13); },
+  win(){ [523,659,784,1047].forEach((f,i)=>tone(f, 0, i*.09, .2, "sine", .19)); }
+};
+function paintSnd(){
+  const off = !SFX.on || SFX.vol === 0;
+  $("#icoSnd").innerHTML = off
+    ? '<path d="M11 5.5 6.8 9H4v6h2.8L11 18.5z"/><path d="M15.5 9.5 20 14M20 9.5 15.5 14"/>'
+    : '<path d="M11 5.5 6.8 9H4v6h2.8L11 18.5z"/><path d="M15 9.2a4.2 4.2 0 0 1 0 5.6M17.6 6.6a7.8 7.8 0 0 1 0 10.8"/>';
+  const lab = SFX.on ? "소리 끄기" : "소리 켜기";
+  const b = $("#btnSnd");
+  b.setAttribute("aria-pressed", String(SFX.on));
+  b.setAttribute("aria-label", lab);
+  b.title = lab + " (한 번 누르면 켜짐/꺼짐)";
+  b.classList.toggle("on", SFX.on);
+  $("#sndSt").textContent = SFX.on ? "🔊 소리 켜짐" : "🔇 소리 꺼짐";
+  $("#sndSt").classList.toggle("on", SFX.on);
+  $("#rgVol").value = Math.round(SFX.vol*100);
+  $("#volVal").textContent = Math.round(SFX.vol*100) + "%";
+  if(SFX.gain) SFX.gain.gain.value = SFX.vol;
+}
+
+/* =====================================================================
+   원자 렌더러 — Canvas
+   시그니처: 낱낱의 양성자·중성자가 중심으로 빨려 들어가 하나의 원자핵이 되는 전환
+   주 광원은 좌상단(32%, 27%) 하나 — 모든 구의 하이라이트와 그림자가 여기에 종속된다
+   ===================================================================== */
+const EASE = t => t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+
+class AtomCanvas{
+  constructor(cv){
+    this.cv = cv;
+    this.g  = cv.getContext("2d");
+    this.m  = { p:1, n:0, e:1, sh:[1], sym:"H" };
+    this.o  = { sign:true, big:false, trail:false, labels:true, play:true, fast:false };
+    this.fuse = 0;          /* 0 = 양성자·중성자 낱낱 · 1 = 하나의 원자핵 */
+    this.fuseTo = 0;
+    this.t = 0; this.last = 0; this.raf = null;
+    this.ring = -1;         /* 섬광 고리의 진행도 (0~1), 음수면 없음 */
+    this.hitNuc = {x:0, y:0, r:0};
+    this._cache = null;
+    this.reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const host = cv.parentElement;
+    this.ro = new ResizeObserver(()=>this.fit());
+    this.ro.observe(host);
+    this.fit();
+    this.start();
+  }
+  set(m){
+    const changed = ["p","n","e","sym"].some(k => m[k] !== undefined && m[k] !== this.m[k]);
+    Object.assign(this.m, m);
+    if(changed) this._cache = null;
+  }
+  fit(){
+    const host = this.cv.parentElement;
+    const w = host.clientWidth, h = host.clientHeight;
+    if(!w || !h) return;
+    const dpr = Math.min(2.5, window.devicePixelRatio || 1);
+    this.cv.width = Math.round(w*dpr); this.cv.height = Math.round(h*dpr);
+    this.cv.style.width = w+"px"; this.cv.style.height = h+"px";
+    this.W = w; this.H = h; this.dpr = dpr;
+    this._cache = null;
+  }
+  /* 핵자 배치 — 면심 입방 격자에서 중심에 가까운 N개를 골라 구형 덩어리를 만든다 */
+  pack(){
+    const key = this.m.p + ":" + this.m.n;
+    if(this._packKey === key) return this._pack;
+    const N = this.m.p + this.m.n;
+    const cand = [];
+    const lim = Math.ceil(Math.cbrt(Math.max(N,1))) + 2;
+    for(let i=-lim;i<=lim;i++) for(let j=-lim;j<=lim;j++) for(let k=-lim;k<=lim;k++){
+      if((((i+j+k)%2)+2)%2) continue;
+      cand.push({x:i, y:j, z:k, d:i*i+j*j+k*k});
+    }
+    cand.sort((a,b)=>a.d-b.d);
+    const use = cand.slice(0, N);
+    /* 양성자와 중성자를 비율에 맞춰 번갈아 배정해 한쪽으로 몰리지 않게 한다 */
+    let pi = 0, ni = 0;
+    const P = this.m.p, Nn = this.m.n;
+    use.forEach(q=>{
+      const takeP = pi < P && (ni >= Nn || pi*Math.max(Nn,1) <= ni*Math.max(P,1));
+      q.t = takeP ? "p" : "n";
+      if(takeP) pi++; else ni++;
+    });
+    /* 격자 결이 드러나지 않도록 고정 각도로 3차원 회전 + 미세한 흔들림 */
+    const A=.62, B=.45, C=.31;
+    const cA=Math.cos(A), sA=Math.sin(A), cB=Math.cos(B), sB=Math.sin(B), cC=Math.cos(C), sC=Math.sin(C);
+    const jit = i => ((Math.sin(i*12.9898 + N*78.233)*43758.5453) % 1 + 1) % 1 - .5;
+    const pts = use.map((q,i)=>{
+      const x1 =  q.x*cB + q.z*sB, z1 = -q.x*sB + q.z*cB;
+      const y2 =  q.y*cA - z1*sA,  z2 =  q.y*sA + z1*cA;
+      const x3 =  x1*cC - y2*sC,   y3 =  x1*sC + y2*cC;
+      return {x:x3 + jit(i*3)*.16, y:y3 + jit(i*3+1)*.16, z:z2 + jit(i*3+2)*.16, t:q.t};
+    });
+    let cx=0, cy=0, cz=0;
+    pts.forEach(q=>{ cx+=q.x; cy+=q.y; cz+=q.z; });
+    if(N){ cx/=N; cy/=N; cz/=N; }
+    pts.forEach(q=>{ q.x-=cx; q.y-=cy; q.z-=cz; });
+    pts.sort((a,b)=>a.z-b.z);                 /* 뒤쪽부터 그려 앞쪽이 위로 오게 */
+    this._packKey = key; this._pack = pts;
+    return pts;
+  }
+  layout(){
+    const padT = 52, padB = 62;                    /* 배지 줄 · 이름표가 쓰는 높이 */
+    const free = Math.max(120, this.H - padT - padB);
+    const S = Math.max(150, Math.min(this.W - 40, free));
+    const R = S/2, cx = this.W/2, cy = padT + free/2;
+    const N = this.m.p + this.m.n;
+    const targetR = (this.o.big ? .21 : .155) * S;
+    const dCap    = (this.o.big ? .19 : .135) * S;
+    let d = Math.min(dCap, 2*targetR / Math.cbrt(Math.max(N,1)/.74));
+    d = Math.max(d, .012*S);
+    const step = d/Math.SQRT2;
+    const pts = this.pack();
+    let rmax = 0;
+    const nucleons = pts.map(q=>{
+      const x = q.x*step, y = q.y*step;
+      const rr = Math.hypot(x,y) + d/2;
+      if(rr > rmax) rmax = rr;
+      return {x, y, z:q.z, t:q.t};
+    });
+    let zMin = Infinity, zMax = -Infinity;
+    nucleons.forEach(q=>{ if(q.z<zMin) zMin=q.z; if(q.z>zMax) zMax=q.z; });
+    const zSpan = (zMax - zMin) || 1;
+    nucleons.forEach(q=>{
+      const t = (zMax === zMin) ? 1 : (q.z - zMin)/zSpan;
+      q.d = d*(.84 + .16*t);
+      q.sh = t;
+    });
+    const simpleR = (this.o.big ? .20 : .155)*S;
+    const nucR = rmax || simpleR;
+    /* 전자 껍질 반지름 — 핵과 무대 사이를 고르게 나눈다 */
+    const ne = this.m.e;
+    const ed = clamp(.082*S/Math.pow(Math.max(ne,1),.2), .016*S, .09*S);
+    const shells = this.m.sh;
+    const rIn  = Math.max(nucR, simpleR) + ed*.95 + .035*S;
+    const rOut = R - ed*.6;
+    const orbits = [], electrons = [];
+    const k = shells.length;
+    for(let s=0;s<k;s++){
+      const rr = k === 1 ? (rIn + rOut)/2 : rIn + (rOut - rIn)*s/(k-1);
+      orbits.push({r:rr, nm:SHELL(s), cnt:shells[s]});
+      for(let i=0;i<shells[s];i++)
+        electrons.push({r:rr, ph:(i/shells[s])*Math.PI*2 + s*.5, sp:.62/Math.pow(s+1,.72), d:ed, s});
+    }
+    return {S, R, cx, cy, d, nucleons, nucR, simpleR, orbits, electrons, ed};
+  }
+  /* 광원 좌상단 하나 — 모든 구가 같은 방향의 하이라이트를 갖는다 */
+  ball(x, y, d, c1, c2, c3, label, alpha){
+    const g = this.g, r = d/2;
+    if(r <= 0.3) return;
+    g.save();
+    if(alpha !== undefined) g.globalAlpha = alpha;
+    const gr = g.createRadialGradient(x - r*.34, y - r*.38, r*.06, x, y, r);
+    gr.addColorStop(0, c1); gr.addColorStop(.56, c2); gr.addColorStop(1, c3);
+    g.fillStyle = gr;
+    g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
+    const hl = g.createRadialGradient(x - r*.36, y - r*.44, 0, x - r*.36, y - r*.44, r*.46);
+    hl.addColorStop(0, "rgba(255,255,255,.85)"); hl.addColorStop(1, "rgba(255,255,255,0)");
+    g.fillStyle = hl;
+    g.beginPath(); g.arc(x - r*.36, y - r*.44, r*.46, 0, 7); g.fill();
+    if(label && d > 12){
+      g.fillStyle = "#fff";
+      g.font = `900 ${(d*.6).toFixed(1)}px ${getComputedStyle(document.body).fontFamily}`;
+      g.textAlign = "center"; g.textBaseline = "middle";
+      g.fillText(label, x, y + d*.03);
+    }
+    g.restore();
+  }
+  draw(){
+    if(!this.W || !this.H) return;                 /* 아직 화면에 없는 탭 — 크기가 정해지면 그린다 */
+    const g = this.g, L = this.L = this.layout();
+    const css = getComputedStyle(document.documentElement);
+    const line = css.getPropertyValue("--line-2").trim() || "#31485f";
+    const ink3 = css.getPropertyValue("--ink-3").trim() || "#6e869e";
+    const panel = css.getPropertyValue("--panel").trim() || "#132133";
+    g.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    g.clearRect(0, 0, this.W, this.H);
+    const {cx, cy} = L;
+    const f = this.reduce ? this.fuseTo : this.fuse;
+    const fe = EASE(clamp(f, 0, 1));
+
+    /* ── 전자 껍질 궤도 ── */
+    g.save();
+    g.setLineDash([5,6]); g.lineWidth = 1.4;
+    L.orbits.forEach((ob,i)=>{
+      const outer = i === L.orbits.length-1;
+      g.strokeStyle = outer ? "rgba(63,169,245,.62)" : line;
+      g.setLineDash(outer ? [] : [5,6]);
+      g.lineWidth = outer ? 1.7 : 1.3;
+      g.beginPath(); g.arc(cx, cy, ob.r, 0, 7); g.stroke();
+    });
+    g.restore();
+
+    /* ── 원자핵 주변 발광 ── */
+    const glowR = (L.nucR*(1-fe) + L.simpleR*fe) * 2.5;
+    const gl = g.createRadialGradient(cx, cy, 0, cx, cy, glowR);
+    gl.addColorStop(0, "rgba(226,72,59,.26)"); gl.addColorStop(.45, "rgba(226,72,59,.10)");
+    gl.addColorStop(1, "rgba(226,72,59,0)");
+    g.fillStyle = gl; g.beginPath(); g.arc(cx, cy, glowR, 0, 7); g.fill();
+
+    /* ── 핵 : 낱낱의 양성자·중성자 → 하나의 원자핵 ── */
+    if(fe < 1){
+      L.nucleons.forEach(q=>{
+        const x = cx + q.x*(1-fe), y = cy + q.y*(1-fe);
+        const d = q.d*(1 - .68*fe);
+        const b = .82 + .18*q.sh;
+        const mix = (hex, k) => hex;
+        if(q.t === "p") this.ball(x, y, d, "#ff9a8e", "#e2483b", "#8e1d14", this.o.sign ? "+" : "", 1-fe*.9);
+        else            this.ball(x, y, d, "#dbe7ef", "#8fa6b8", "#55697c", "", 1-fe*.9);
+      });
+    }
+    if(fe > 0){
+      const R = L.simpleR*(.3 + .7*fe);
+      this.ball(cx, cy, R*2, "#ff9a8e", "#e2483b", "#8e1d14", "", fe);
+      g.save(); g.globalAlpha = fe;
+      g.fillStyle = "#fff";
+      g.font = `900 ${(R*(this.m.p>=10 ? .72 : .86)).toFixed(1)}px ${getComputedStyle(document.body).fontFamily}`;
+      g.textAlign = "center"; g.textBaseline = "middle";
+      g.fillText("+" + this.m.p, cx, cy + R*.04);
+      g.restore();
+    }
+    this.hitNuc = {x:cx, y:cy, r:Math.max(L.nucR, L.simpleR)*(fe>.5?1:1.05)};
+
+    /* ── 합쳐지는 순간의 섬광 고리 ── */
+    if(this.ring >= 0){
+      const t = EASE(this.ring);
+      g.save();
+      g.globalAlpha = (1-t)*.85;
+      g.strokeStyle = "#ff9a8e"; g.lineWidth = 3*(1-t)+.6;
+      g.beginPath(); g.arc(cx, cy, L.simpleR*.5 + t*L.R*.95, 0, 7); g.stroke();
+      g.restore();
+    }
+
+    /* ── 전자 ── */
+    const t = this.t;
+    L.electrons.forEach(e=>{
+      const a = e.ph + t*e.sp;
+      const x = cx + Math.cos(a)*e.r, y = cy + Math.sin(a)*e.r;
+      if(this.o.trail){
+        for(let k=3;k>=1;k--){
+          const a2 = a - k*.085;
+          this.ball(cx + Math.cos(a2)*e.r, cy + Math.sin(a2)*e.r, e.d*(.62 - k*.1),
+                    "#a5d9ff", "#3fa9f5", "#14568f", "", .26 - k*.06);
+        }
+      }
+      g.save();
+      g.shadowColor = "rgba(63,169,245,.7)"; g.shadowBlur = e.d*.7;
+      this.ball(x, y, e.d, "#a5d9ff", "#3fa9f5", "#14568f", this.o.sign ? "−" : "");
+      g.restore();
+    });
+
+    /* ── 껍질 이름표 ── */
+    if(this.o.labels){
+      g.save();
+      g.font = `900 11px ${getComputedStyle(document.body).fontFamily}`;
+      g.textAlign = "center"; g.textBaseline = "middle";
+      const alt = L.orbits.length >= 3;
+      L.orbits.forEach((ob,i)=>{
+        let y = (alt && i % 2) ? cy + ob.r : cy - ob.r;
+        y = clamp(y, 12, this.H - 12);
+        const tx = `${ob.nm} 껍질 ${ob.cnt}`;
+        const w = g.measureText(tx).width + 16;
+        g.fillStyle = panel; g.strokeStyle = line; g.lineWidth = 1;
+        const rx = cx - w/2, ry = y - 9, rw = w, rh = 18, rr = 9;
+        g.beginPath();
+        g.moveTo(rx+rr, ry); g.arcTo(rx+rw, ry, rx+rw, ry+rh, rr);
+        g.arcTo(rx+rw, ry+rh, rx, ry+rh, rr); g.arcTo(rx, ry+rh, rx, ry, rr);
+        g.arcTo(rx, ry, rx+rw, ry, rr); g.closePath();
+        g.fill(); g.stroke();
+        g.fillStyle = ink3; g.fillText(tx, cx, y + .5);
+      });
+      g.restore();
+    }
+
+    /* ── 워터마크 (캡처·PDF에 남는다) ── */
+    g.save();
+    g.font = `800 10px ${getComputedStyle(document.body).fontFamily}`;
+    g.textAlign = "right"; g.textBaseline = "bottom";
+    g.fillStyle = ink3; g.globalAlpha = .75;
+    g.fillText("© 송쌤과학", this.W - 12, this.H - 8);
+    g.restore();
+  }
+  start(){
+    if(this.raf) cancelAnimationFrame(this.raf);
+    this.last = performance.now();
+    const loop = now=>{
+      const dt = Math.min(.05, (now - this.last)/1000);
+      this.last = now;
+      if(this.o.play) this.t += dt*(this.o.fast ? 2.1 : 1);
+      if(this.fuse !== this.fuseTo){
+        const sp = dt/.42;
+        this.fuse = this.fuseTo > this.fuse ? Math.min(this.fuseTo, this.fuse+sp) : Math.max(this.fuseTo, this.fuse-sp);
+      }
+      if(this.ring >= 0){ this.ring += dt/.62; if(this.ring > 1) this.ring = -1; }
+      try{ this.draw(); }catch(err){ /* 한 프레임이 실패해도 실험은 계속된다 */ }
+      this.raf = requestAnimationFrame(loop);
     };
-});
+    this.raf = requestAnimationFrame(loop);
+  }
+  setFuse(v){
+    if(this.fuseTo === (v?1:0)) return;
+    this.fuseTo = v ? 1 : 0;
+    this.ring = 0;
+    if(this.reduce) this.fuse = this.fuseTo;
+  }
+  /* 저장용 이미지 — 학번·이름·날짜 띠를 아래에 붙인다 (§10) */
+  toPNG(sub){
+    const s = 2, W = this.W, H = this.H, bar = 34;
+    const out = document.createElement("canvas");
+    out.width = W*s; out.height = (H + bar)*s;
+    const g = out.getContext("2d");
+    g.scale(s, s);
+    const css = getComputedStyle(document.documentElement);
+    g.fillStyle = css.getPropertyValue("--bg").trim() || "#0b1420";
+    g.fillRect(0, 0, W, H + bar);
+    g.drawImage(this.cv, 0, 0, W, H);
+    g.strokeStyle = css.getPropertyValue("--line").trim(); g.lineWidth = 1;
+    g.beginPath(); g.moveTo(0, H+.5); g.lineTo(W, H+.5); g.stroke();
+    const fam = getComputedStyle(document.body).fontFamily;
+    g.textBaseline = "middle"; g.font = `800 11px ${fam}`;
+    g.fillStyle = css.getPropertyValue("--ink-3").trim();
+    g.textAlign = "left";  g.fillText(`© 송쌤과학 · ${sub||"원자의 구조 가상실험실"}`, 12, H + bar/2);
+    g.textAlign = "right";
+    g.fillStyle = css.getPropertyValue("--ink-2").trim();
+    g.fillText(`${stuLabel() || "이름 미입력"} · ${todayKo()}`, W - 12, H + bar/2);
+    return out;
+  }
+}
 
-/**
- * ==========================================
- * 2. 전역 상태 관리 (State)
- * ==========================================
- */
-const state = {
-    currentElement: elementsData[0], // 초기값: 수소
-    speed: 1,
-    scale: 1,
-    isPlaying: true,
-    soundEnabled: false,
-    hoveredElectron: null,
-    hoveredShell: null,
-    time: 0,
-    quizMode: false,
-    quizTarget: null,
-    animFrameId: null
+/* =====================================================================
+   상태
+   ===================================================================== */
+const ST = {
+  view:"build",
+  p:1, n:0, e:1,           /* 원자 만들기 — 세 입자를 각각 조절한다 */
+  ionZ:11, ionD:0,         /* 이온 만들기 — 잃거나 얻은 전자 수 */
+  unit:"rel",
+  fused:false,
+  mig:false, migExp:"my",
+  fam:0,                   /* 주기율표에서 강조할 족 */
+  done:{}                  /* 단계별 완료 표시 */
 };
+const STU = { grade:"", cls:"", no:"", name:"" };
+let cvBuild = null, cvIon = null, stuNext = null;
 
-/**
- * ==========================================
- * 3. Web Audio API (사운드 매니저)
- * ==========================================
- */
-let audioCtx = null;
+function stuLabel(){
+  const id = [STU.grade, STU.cls, STU.no].every(v=>v) ? `${STU.grade}${String(STU.cls).padStart(2,"0")}${String(STU.no).padStart(2,"0")}` : "";
+  return [id, STU.name].filter(Boolean).join(" ");
+}
+function todayKo(){ const d = new Date(); return `${d.getFullYear()}. ${d.getMonth()+1}. ${d.getDate()}.`; }
 
-const initAudio = () => { 
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
-    }
+/* =====================================================================
+   1. 원자 만들기
+   ===================================================================== */
+const E_C = 1.6;                       /* ×10⁻¹⁹ C */
+
+function setP(v){
+  v = clamp(v|0, 1, ZMAX);
+  if(v === ST.p) return tickIn("#inP");
+  const wasNeutral = ST.e === ST.p;
+  ST.p = v;
+  ST.n = EL(v).n;
+  ST.e = wasNeutral ? v : clamp(ST.e, 0, eMax(v));
+  sfx.step(); renderBuild(); tickIn("#inP");
+}
+function setN(v){
+  v = clamp(v|0, 0, NMAX);
+  if(v === ST.n) return tickIn("#inN");
+  ST.n = v; sfx.step(); renderBuild(); tickIn("#inN");
+}
+function setE(v){
+  v = clamp(v|0, 0, eMax(ST.p));
+  if(v === ST.e) return tickIn("#inE");
+  ST.e = v; sfx.step(); renderBuild(); tickIn("#inE");
+}
+function tickIn(sel){
+  const el = $(sel); if(!el) return;
+  el.classList.remove("tick"); void el.offsetWidth; el.classList.add("tick");
+}
+function paintStep(rootSel, inSel, v, min, max){
+  const r = $(rootSel);
+  r.querySelector('[data-d="-1"]').disabled = v <= min;
+  r.querySelector('[data-d="1"]').disabled  = v >= max;
+  const i = $(inSel);
+  if(document.activeElement !== i && i.value !== String(v)) i.value = v;
+}
+
+function renderBuild(){
+  const e = EL(ST.p), ne = ST.e, chg = ST.p - ne;
+  const sh = shellsFor(ST.p, ne);
+  const isIon = chg !== 0;
+  const nm = isIon ? ionName(e, chg) : `${e.kor} 원자`;
+
+  /* 무대 배지 */
+  $("#b-p").textContent = ST.p;
+  $("#b-n").textContent = ST.n;
+  $("#b-e").textContent = ne;
+  const cb = $("#b-chg");
+  cb.className = "bdg" + (chg>0 ? " pos" : chg<0 ? " neg" : "");
+  cb.innerHTML = `<b>전하 ${chgTx(chg)}</b>`;
+  $("#s-name").textContent = nm;
+  $("#s-sub").textContent = isIon
+    ? `${ionTx(e.sym, chg)} · 양성자 ${ST.p} · 전자 ${ne}`
+    : `${e.sym} · 원자 번호 ${e.z} · ${e.g}족 ${e.pr}주기`;
+
+  /* 스테퍼 */
+  paintStep("#stP", "#inP", ST.p, 1, ZMAX);
+  paintStep("#stN", "#inN", ST.n, 0, NMAX);
+  paintStep("#stE", "#inE", ne, 0, eMax(ST.p));
+
+  /* 판정 */
+  const v = $("#verdict");
+  if(ne === 0){
+    v.className = "verdict warn";
+    v.innerHTML = `<span class="em">⚠️</span><span>전자를 <b>모두 잃었습니다</b>. 실제 원자에서는 이렇게까지 되기 어려워요 — 전자를 다시 늘려 보세요.</span>`;
+  }else if(chg === 0){
+    v.className = "verdict neu";
+    v.innerHTML = `<span class="em">⚖️</span><span><b>${esc(e.kor)} 원자</b> — 양성자 ${ST.p}개 = 전자 ${ne}개 이므로 <b>전기적으로 중성</b>입니다.</span>`;
+  }else if(chg > 0){
+    v.className = "verdict pos";
+    v.innerHTML = `<span class="em">🔴</span><span>전자를 <b>${chg}개 잃어</b> (+)전하가 많아졌습니다 → <b>${ionTx(e.sym,chg)} ${esc(ionName(e,chg))}</b>(양이온)</span>`;
+  }else{
+    v.className = "verdict neg";
+    v.innerHTML = `<span class="em">🔵</span><span>전자를 <b>${-chg}개 얻어</b> (−)전하가 많아졌습니다 → <b>${ionTx(e.sym,chg)} ${esc(ionName(e,chg))}</b>(음이온)</span>`;
+  }
+
+  /* 이 원자는 무엇일까 */
+  $("#idBox").innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:60px;height:60px;border-radius:14px;flex:0 0 auto;display:grid;place-items:center;
+                  background:${e.c};color:#fff;box-shadow:var(--sh2);position:relative;overflow:hidden">
+        <span style="font-size:11px;font-weight:800;opacity:.9;position:absolute;top:5px;left:7px">${e.z}</span>
+        <span style="font-size:26px;font-weight:900;letter-spacing:-.05em">${e.sym}</span>
+      </div>
+      <div style="min-width:0">
+        <div style="font-size:16px;font-weight:900;letter-spacing:-.03em">${esc(e.kor)}</div>
+        <div style="font-size:11.5px;font-weight:700;color:var(--ink-3)">${e.eng} · ${CAT[e.cat].n}</div>
+      </div>
+    </div>
+    <div style="margin-top:10px">
+      <div class="kv"><span class="k">원자 번호 (= 양성자 수)</span><span class="v">${e.z}</span></div>
+      <div class="kv"><span class="k">주기율표 위치</span><span class="v">${e.g}족 · ${e.pr}주기</span></div>
+    </div>
+    <div class="note" style="margin-top:9px">
+      원자의 종류는 <b>원자핵의 양성자 수</b>로 정해집니다. 양성자가 <b>${ST.p}개</b>이므로 이 입자는 <b>${esc(e.kor)}(${e.sym})</b>이고,
+      ${ST.n !== e.n
+        ? `중성자를 <b>${ST.n}개</b>로 바꿨지만 양성자 수가 그대로라 <b>원소는 바뀌지 않습니다</b>.`
+        : `중성자는 전하가 없어 전하량 계산에 들어가지 않습니다.`}
+    </div>`;
+
+  /* 총전하량 */
+  renderCalc(ST.p, ne, chg);
+
+  /* 껍질 */
+  $("#shellBox").innerHTML = shellBar(sh);
+  $("#k-shell").textContent = sh.length ? sh.join(" ") : "없음";
+  $("#k-nsh").textContent = sh.length ? `${sh.length}개 (K${sh.length>1 ? " ~ " + SHELL(sh.length-1) : ""})` : "0개";
+  $("#k-val").textContent = sh.length ? `${sh[sh.length-1]}개 (${SHELL(sh.length-1)} 껍질)` : "—";
+
+  /* 모형 */
+  cvBuild.set({p:ST.p, n:ST.n, e:ne, sh, sym:e.sym});
+  paintFuse();
+  paintMission();
+  markSel();
+  mark("build");
+  guide();
+}
+
+function shellBar(sh){
+  if(!sh.length) return `<div style="font-size:12px;font-weight:800;color:var(--ink-3)">전자가 없습니다</div>`;
+  return `<div style="display:flex;flex-direction:column;gap:5px">` + sh.map((c,i)=>{
+    const cap = i === 0 ? 2 : (i === 1 ? 8 : (i === 2 ? 18 : 32));
+    const pct = Math.min(100, c/cap*100);
+    const outer = i === sh.length-1;
+    return `<div style="display:flex;align-items:center;gap:8px">
+      <span style="flex:0 0 20px;font-size:11.5px;font-weight:900;color:${outer?"var(--e)":"var(--ink-3)"}">${SHELL(i)}</span>
+      <span style="flex:1 1 auto;height:9px;border-radius:99px;background:var(--line);overflow:hidden">
+        <span style="display:block;height:100%;width:${pct}%;border-radius:99px;
+          background:linear-gradient(90deg,var(--e-hi),var(--e))"></span></span>
+      <span style="flex:0 0 42px;text-align:right;font-size:11.5px;font-weight:900;font-variant-numeric:tabular-nums">${c}<span style="color:var(--ink-3);font-weight:700">/${cap}</span></span>
+    </div>`;
+  }).join("") + `</div>`;
+}
+
+function renderCalc(p, ne, chg){
+  const rel = ST.unit === "rel";
+  const f = v => (Math.round(v*10)/10).toFixed(1);
+  const pl = rel ? `양성자 ${p}개 × (+1)` : `양성자 ${p}개 × (+1.6×10⁻¹⁹ C)`;
+  const el = rel ? `전자 ${ne}개 × (−1)`  : `전자 ${ne}개 × (−1.6×10⁻¹⁹ C)`;
+  const pv = rel ? (p ? "+"+p : "0") : (p ? `+${f(p*E_C)}×10⁻¹⁹ C` : "0 C");
+  const ev = rel ? (ne ? "−"+ne : "0") : (ne ? `−${f(ne*E_C)}×10⁻¹⁹ C` : "0 C");
+  const sv = rel ? chgTx(chg) : (chg === 0 ? "0 C" : `${chg>0?"+":"−"}${f(Math.abs(chg)*E_C)}×10⁻¹⁹ C`);
+  const verdict = chg === 0
+    ? `<b style="color:var(--ok)">전기적으로 중성</b> — 양성자 수(${p}) = 전자 수(${ne})`
+    : chg > 0 ? `<b style="color:var(--p-lo)">중성이 아님 → 양이온</b> — (+)전하가 ${chg}만큼 남습니다`
+              : `<b style="color:var(--e-lo)">중성이 아님 → 음이온</b> — (−)전하가 ${-chg}만큼 많습니다`;
+  $("#calcBox").innerHTML = `
+    <div class="r p"><span class="lb">${pl}</span><span class="nv">${pv}</span></div>
+    <div class="r e"><span class="lb">${el}</span><span class="nv">${ev}</span></div>
+    <div class="r s"><span class="lb">총전하량 합계</span><span class="nv">${sv}</span></div>
+    <div class="r s" style="border-top:0"><span class="lb" style="font-size:11.5px;line-height:1.5">${verdict}</span></div>`;
+}
+
+function paintFuse(){
+  const on = ST.fused;
+  $("#btnFuse").classList.toggle("merged", on);
+  $("#fuseLb").textContent = on ? "양성자·중성자로 펼치기" : "원자핵으로 합치기";
+  const tt = on ? "원자핵을 양성자·중성자로 다시 펼치기 (N)" : "양성자·중성자를 원자핵으로 합치기 (N)";
+  $("#btnFuse").title = tt;
+  $("#btnFuse").setAttribute("aria-label", tt);
+}
+function setFuse(on, quiet){
+  ST.fused = !!on;
+  cvBuild.setFuse(ST.fused);
+  cvIon.setFuse(ST.fused);
+  paintFuse();
+  if(!quiet){
+    ST.fused ? sfx.fuse() : sfx.split();
+    const z = ST.view === "ion" ? ST.ionZ : ST.p;
+    toast(ST.fused
+      ? `양성자 ${z}개가 뭉쳐 <b>원자핵</b>이 되었어요 — 원자핵의 전하는 <b>+${z}</b>`
+      : "원자핵을 <b>양성자·중성자</b>로 다시 펼쳤어요");
+    if(ST.fused) markDone("fuse");
+  }
+}
+
+/* ---------- 원자 만들기 도전 (교과서 144쪽 활동의 디지털판) ---------- */
+const MI = { on:false, task:null, clear:false, solved:0 };
+function newTask(){
+  const z = 1 + ((Math.random()*20)|0);
+  const e = EL(z);
+  const kinds = ["el","e","nuc","cnt"];
+  if(e.ion !== null) kinds.push("ion");
+  const k = pick(kinds);
+  if(k === "el")  return {need:{p:z,e:z}, q:`<b>${esc(e.kor)}(${e.sym})</b> 원자를 만들어 보세요.`,
+                          why:`${esc(e.kor)}의 원자 번호가 ${z}이므로 양성자 ${z}개, 중성 원자이므로 전자도 ${z}개입니다.`};
+  if(k === "e")   return {need:{p:z,e:z}, q:`전자가 <b>${z}개</b>인 <b>중성 원자</b>를 만들어 보세요.`,
+                          why:`중성 원자는 양성자 수 = 전자 수이므로 양성자도 ${z}개 → 원자 번호 ${z}번 <b>${esc(e.kor)}</b>입니다.`};
+  if(k === "nuc") return {need:{p:z,e:z}, q:`원자핵의 총전하량이 <b>+${z}</b>인 <b>중성 원자</b>를 만들어 보세요.`,
+                          why:`양성자 1개가 +1이므로 원자핵의 전하가 +${z}이면 양성자는 ${z}개, 중성 원자이므로 전자도 ${z}개입니다.`};
+  if(k === "cnt") return {need:{p:z,n:e.n,e:z}, q:`양성자 <b>${z}개</b>, 중성자 <b>${e.n}개</b>, 전자 <b>${z}개</b>인 원자를 만들어 보세요.`,
+                          why:`양성자가 ${z}개이므로 <b>${esc(e.kor)}</b>이고, 전자 수가 양성자 수와 같아 전기적으로 중성입니다.`};
+  const c = e.ion;
+  return {need:{p:z,e:z-c}, q:`${esc(e.kor)} 원자가 전자 <b>${Math.abs(c)}개</b>를 ${c>0?"잃은":"얻은"} 입자를 만들어 보세요.`,
+          why:`양성자는 ${z}개 그대로이고 전자만 ${z-c}개가 되어 <b>${ionTx(e.sym,c)} ${esc(ionName(e,c))}</b>이 됩니다.`};
+}
+function taskOK(t){
+  if(!t) return false;
+  const nd = t.need;
+  return (nd.p === undefined || ST.p === nd.p)
+      && (nd.n === undefined || ST.n === nd.n)
+      && (nd.e === undefined || ST.e === nd.e);
+}
+function paintMission(){
+  const box = $("#missionBox");
+  box.style.display = MI.on ? "block" : "none";
+  $("#btnMission").classList.toggle("pri", MI.on);
+  if(!MI.on) return;
+  if(!MI.task) MI.task = newTask();
+  const ok = taskOK(MI.task);
+  if(ok && !MI.clear){ MI.clear = true; MI.solved++; sfx.win(); toast("정확합니다! 조건에 맞는 입자를 만들었어요", "ok"); markDone("mission"); }
+  else if(!ok && MI.clear) MI.clear = false;
+  box.innerHTML = `
+    <div class="verdict ${MI.clear ? "neu" : "warn"}" style="margin:0">
+      <span class="em">${MI.clear ? "✅" : "🧩"}</span>
+      <span><b>도전 ${MI.solved + (MI.clear?0:1)}</b> — ${MI.task.q}${MI.clear ? `<br><span style="font-weight:800">${MI.task.why}</span>` : ""}</span>
+    </div>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn sm ${MI.clear?"pri":""}" id="miNext">${MI.clear ? "다음 도전 ▸" : "다른 문제로"}</button>
+      <button class="btn sm" id="miOff">도전 끝내기</button>
+    </div>`;
+  $("#miNext").onclick = ()=>{ MI.task = newTask(); MI.clear = false; paintMission(); };
+  $("#miOff").onclick  = ()=>{ MI.on = false; MI.task = null; MI.clear = false; paintMission(); };
+}
+
+/* =====================================================================
+   2. 주기율표 1~30 — 원소 기호를 크게 [9과11-03]
+   ===================================================================== */
+function buildTable(){
+  const box = $("#ptable");
+  box.innerHTML = "";
+  const ax = (t, cls)=>{ const d = document.createElement("div"); d.className = "pt-ax"+(cls?" "+cls:""); d.textContent = t; box.appendChild(d); };
+  const sp = n=>{ for(let i=0;i<n;i++){ const d = document.createElement("div"); d.className = "pt-cell sp"; box.appendChild(d); } };
+  const cell = z=>{
+    const e = EL(z);
+    const b = document.createElement("button");
+    b.className = "pt-cell";
+    b.style.background = e.c;
+    b.dataset.z = z; b.dataset.g = e.g;
+    b.innerHTML = `<span class="z">${z}</span><span class="sy">${e.sym}</span><span class="kn">${e.kor}</span>`;
+    b.title = `${e.kor} ${e.sym} · 원자 번호 ${z}(양성자 ${z}개) · ${e.g}족 ${e.pr}주기 · ${CAT[e.cat].n}`;
+    box.appendChild(b);
+  };
+  ax("", "top"); for(let g=1;g<=18;g++) ax(String(g), "top");
+  ax("1"); cell(1); sp(16); cell(2);
+  ax("2"); cell(3); cell(4); sp(10); for(let z=5;z<=10;z++) cell(z);
+  ax("3"); cell(11); cell(12); sp(10); for(let z=13;z<=18;z++) cell(z);
+  ax("4"); for(let z=19;z<=30;z++) cell(z);
+  for(let i=0;i<6;i++){ const d = document.createElement("div"); d.className = "pt-cell more"; d.textContent = 31+i; box.appendChild(d); }
+
+  $("#ptLegend").innerHTML =
+    Object.values(CAT).map(v=>`<span class="lg"><i style="background:${v.c}"></i>${v.n}</span>`).join("")
+    + `<span class="lg"><i style="background:none;border:1.5px dashed var(--line-2)"></i>31번부터는 이 실험실에서 다루지 않습니다</span>`;
+
+  box.addEventListener("click", ev=>{
+    const c = ev.target.closest(".pt-cell[data-z]"); if(!c) return;
+    const z = +c.dataset.z;
+    ST.p = z; ST.n = EL(z).n; ST.e = z;
+    sfx.ok(); markDone("table");
+    go("build"); renderBuild();
+    toast(`<b>${EL(z).kor}(${EL(z).sym})</b> 원자를 만들었어요 — 양성자 ${z}개`, "ok");
+  });
+  box.addEventListener("pointerover", ev=>{
+    const c = ev.target.closest(".pt-cell[data-z]");
+    famHi(c ? +c.dataset.g : ST.fam);
+  });
+  box.addEventListener("pointerleave", ()=>famHi(ST.fam));
+}
+function famHi(g){
+  $$("#ptable .pt-cell[data-z]").forEach(c=>c.classList.toggle("fam", !!g && +c.dataset.g === g));
+}
+function markSel(){
+  $$("#ptable .pt-cell[data-z]").forEach(c=>c.classList.toggle("sel", +c.dataset.z === ST.p));
+}
+
+/* 같은 족 원소의 성질 — 교과서 146~147쪽 탐구 / 그림 Ⅳ-9 */
+const FAMS = {
+  1:{ nm:"1족 원소", sub:"알칼리 금속", syms:"Li · Na · K", zs:[3,11,19], cls:"g1", rows:[
+      ["실온 상태","<b>고체</b>로 존재합니다"],
+      ["물과의 반응","물과 <b>격렬하게 반응</b>합니다"],
+      ["안정성","다른 원소와 <b>잘 반응</b>합니다"],
+      ["그 밖","은백색 광택이 있고, 칼로 자를 수 있을 만큼 무릅니다"]]},
+ 17:{ nm:"17족 원소", sub:"할로젠", syms:"F · Cl", zs:[9,17], cls:"g17", rows:[
+      ["실온 상태","<b>기체</b>로 존재합니다 (플루오린·염소)"],
+      ["색","연노랑·황록색 등 <b>색을 띱니다</b>"],
+      ["안정성","다른 원소와 <b>매우 잘 반응</b>합니다"],
+      ["그 밖","금속과 만나면 −1가 음이온이 되기 쉽습니다"]]},
+ 18:{ nm:"18족 원소", sub:"비활성 기체", syms:"He · Ne · Ar", zs:[2,10,18], cls:"g18", rows:[
+      ["실온 상태","<b>기체</b>로 존재합니다"],
+      ["물과의 반응","<b>반응하지 않습니다</b>"],
+      ["안정성","다른 원소와 <b>거의 반응하지 않습니다</b>"],
+      ["그 밖","네온은 간판에, 헬륨은 비행선에 이용됩니다"]]}
 };
+function renderFams(){
+  const keys = ST.fam === 1 ? [1,18] : ST.fam === 18 ? [18,1] : ST.fam === 17 ? [17,1] : [1,18];
+  $("#famGrid").innerHTML = keys.map(k=>{
+    const f = FAMS[k];
+    return `<div class="fam-card ${f.cls}">
+      <div class="h">${f.nm}<span style="font-weight:800;opacity:.86">· ${f.sub}</span><span class="sy">${f.syms}</span></div>
+      <div class="b">${f.rows.map(r=>`<div class="l"><span class="k">${r[0]}</span><span class="v">${r[1]}</span></div>`).join("")}</div>
+    </div>`;
+  }).join("") + `<div class="note" style="grid-column:1/-1">
+      성질이 비슷한 원소가 <b>같은 족</b>에 오도록 배치했기 때문에, 성질을 모르는 원소라도
+      <b>같은 족에 속한 다른 원소의 성질</b>을 알면 그 원소의 성질을 예측할 수 있습니다. <b>[9과11-03]</b>
+    </div>`;
+}
 
-const playSound = (type) => {
-    if (!state.soundEnabled) return;
-    initAudio();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    
-    const osc = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
-    
-    osc.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
+/* =====================================================================
+   3. 이온 만들기 [9과11-04]
+   ===================================================================== */
+function renderIon(){
+  const e = EL(ST.ionZ), c = ST.ionD, ne = clamp(e.z - c, 0, 30);
+  const sh = shellsFor(e.z, ne);
+  const nm = ionName(e, c);
 
-    const now = audioCtx.currentTime;
-    
-    if (type === 'bell') {
-        // 원소 변경 시 맑은 소리
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, now); // A5
-        osc.frequency.exponentialRampToValueAtTime(440, now + 0.4);
-        gainNode.gain.setValueAtTime(0.3, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
-        osc.start(now); 
-        osc.stop(now + 0.4);
-    } else if (type === 'click') {
-        // 일반 버튼 클릭
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(400, now);
-        gainNode.gain.setValueAtTime(0.1, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-        osc.start(now); 
-        osc.stop(now + 0.1);
-    } else if (type === 'pop') {
-        // 전자 클릭
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(300, now);
-        osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
-        gainNode.gain.setValueAtTime(0.2, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-        osc.start(now); 
-        osc.stop(now + 0.1);
-    } else if (type === 'error') {
-        // 오류/경고음
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(150, now);
-        gainNode.gain.setValueAtTime(0.2, now);
-        gainNode.gain.linearRampToValueAtTime(0.01, now + 0.2);
-        osc.start(now);
-        osc.stop(now + 0.2);
-    }
+  $("#i-p").textContent = e.z;
+  $("#i-e").textContent = ne;
+  const cb = $("#i-chg");
+  cb.className = "bdg" + (c>0 ? " pos" : c<0 ? " neg" : "");
+  cb.innerHTML = `<b>전하 ${chgTx(c)}</b>`;
+  $("#i-name").textContent = nm;
+  $("#i-sub").textContent = c === 0 ? "전자를 잃거나 얻어 이온을 만들어 보세요"
+    : c > 0 ? `전자 ${c}개를 잃음 → 양이온` : `전자 ${-c}개를 얻음 → 음이온`;
+  $("#i-delta").textContent = c === 0 ? "0개" : `${Math.abs(c)}개 ${c>0?"잃음":"얻음"}`;
+  $("#i-charge").textContent = chgTx(c);
+  $("#i-shell").textContent = sh.length ? sh.join(" ") : "없음";
+
+  const v = $("#ionVerdict");
+  if(c === 0){
+    v.className = "verdict neu";
+    v.innerHTML = `<span class="em">⚖️</span><span>지금은 <b>${esc(e.kor)} 원자</b>입니다. 원자핵의 (+)전하량과 전자의 (−)전하량이 같아 <b>전기적으로 중성</b>이에요.</span>`;
+  }else if(c > 0){
+    v.className = "verdict pos";
+    v.innerHTML = `<span class="em">🔴</span><span>원자가 전자를 잃으면 <b>(+)전하의 양이 상대적으로 많아지므로</b> (+)전하를 띱니다 → <b>양이온</b></span>`;
+  }else{
+    v.className = "verdict neg";
+    v.innerHTML = `<span class="em">🔵</span><span>원자가 전자를 얻으면 <b>(−)전하의 양이 상대적으로 많아지므로</b> (−)전하를 띱니다 → <b>음이온</b></span>`;
+  }
+
+  /* 이온식 해부 — 교과서 그림 Ⅳ-12 */
+  const n = Math.abs(c);
+  $("#ionForm").innerHTML = c === 0
+    ? `<div style="font-size:12.5px;font-weight:700;color:var(--ink-3);line-height:1.7;text-align:center;padding:14px 4px">
+         아직 <b>원자</b>입니다. 전자를 잃거나 얻으면 이온식이 만들어지고, 각 부분이 무엇을 뜻하는지 확인할 수 있어요.</div>`
+    : `<div style="text-align:center;font-size:38px;font-weight:900;letter-spacing:-.04em;
+                   color:${c>0?"var(--p-lo)":"var(--e-lo)"};margin-bottom:10px">${ionTx(e.sym, c)}</div>
+       <div class="kv"><span class="k">원소 기호</span><span class="v">${e.sym} — ${esc(e.kor)}</span></div>
+       <div class="kv"><span class="k">${c>0?"잃은":"얻은"} 전자 수</span><span class="v">${n === 1 ? "1개 — <span style='color:var(--ink-3);font-weight:700'>1은 생략</span>" : n + "개"}</span></div>
+       <div class="kv"><span class="k">전하의 종류</span><span class="v">${c>0?"(+) 양이온":"(−) 음이온"}</span></div>
+       <div class="kv"><span class="k">이온의 이름</span><span class="v">${esc(nm)}</span></div>
+       <div class="note" style="margin-top:9px">
+         ${c>0 ? "<b>양이온</b>의 이름은 원소 이름 뒤에 <b>‘~ 이온’</b>을 붙입니다."
+               : "<b>음이온</b>의 이름은 원소 이름 뒤에 <b>‘~화 이온’</b>을 붙입니다. 원소 이름이 ‘소’로 끝나면 <b>‘소’를 떼고</b> 붙여요 — 염소 → 염화 이온."}
+       </div>`;
+
+  cvIon.set({p:e.z, n:e.n, e:ne, sh, sym:e.sym});
+  $("#btnGain").disabled = $("#btnGain2").disabled = ne >= eMax(e.z);
+  $("#btnLose").disabled = $("#btnLose2").disabled = ne <= 0;
+  renderMig();
+  if(c !== 0) markDone("ion");
+  guide();
+}
+function stepIon(d){
+  const e = EL(ST.ionZ);
+  const ne = clamp(e.z - ST.ionD + d, 0, eMax(e.z));
+  const nd = e.z - ne;
+  if(nd === ST.ionD) return;
+  ST.ionD = nd; sfx.step(); renderIon();
+}
+
+/* ---------- 전기력을 이용한 이온의 이동 — 교과서 156~157쪽 탐구 ---------- */
+const MIG = {
+  cu:{ nm:"황산 구리(Ⅱ) 수용액", fm:"CuSO₄",
+       ions:[{tx:"Cu²⁺", nm:"구리 이온", c:2, col:"#2f7fe0", see:"파란색"},
+             {tx:"SO₄²⁻", nm:"황산 이온", c:-2, col:"#8ea3bb", see:""}],
+       obs:"파란색 성분이 <b>(−)극 쪽으로</b> 이동합니다. 따라서 파란색을 띠는 이온은 <b>구리 이온(Cu²⁺)</b>입니다." },
+  mn:{ nm:"과망가니즈산 칼륨 수용액", fm:"KMnO₄",
+       ions:[{tx:"K⁺", nm:"칼륨 이온", c:1, col:"#c9a35a", see:""},
+             {tx:"MnO₄⁻", nm:"과망가니즈산 이온", c:-1, col:"#7b3fb8", see:"보라색"}],
+       obs:"보라색 성분이 <b>(+)극 쪽으로</b> 이동합니다. 따라서 보라색을 띠는 이온은 <b>과망가니즈산 이온(MnO₄⁻)</b>입니다." }
 };
+function renderMig(){
+  const box = $("#migBox"), on = ST.mig;
+  const exp = MIG[ST.migExp];
+  let blobs;
+  if(exp) blobs = exp.ions.map(i=>({tx:i.tx, nm:i.nm, c:i.c, col:i.col, see:i.see}));
+  else{
+    const e = EL(ST.ionZ), c = ST.ionD;
+    blobs = [c === 0
+      ? {tx:e.sym, nm:`${e.kor} 원자`, c:0, col:"#7c8ea3", see:""}
+      : {tx:ionTx(e.sym,c), nm:ionName(e,c), c, col:c>0?"#e2483b":"#3fa9f5", see:""}];
+  }
+  box.innerHTML = `
+    <div class="dish ${on?"on":""}" role="img" aria-label="전기력을 이용한 이온의 이동 실험">
+      <span class="plate"></span><span class="spark"></span>
+      <span class="el minus"><b>−</b>극</span><span class="el plus"><b>+</b>극</span>
+      ${blobs.map((b,i)=>`<span class="blob" data-to="${b.c>0?"14%":b.c<0?"calc(86% - 26px)":"calc(50% - 13px)"}"
+         style="left:calc(50% - 13px);background:${b.col};margin-top:${blobs.length>1?(i?"4px":"-28px"):"-13px"}">
+         <span class="tag">${esc(b.nm)}</span>${b.tx}</span>`).join("")}
+    </div>
+    <div class="dish-cap">${blobs.map(b=>`<span class="c"><i style="background:${b.col}"></i>${esc(b.nm)}${b.see?" · "+b.see:""} → ${b.c>0?"(−)극":b.c<0?"(+)극":"움직이지 않음"}</span>`).join("")}</div>`;
+  void box.offsetWidth;                      /* 시작 위치를 확정해야 이동이 애니메이션으로 보인다 */
+  box.querySelectorAll(".blob").forEach(b=>{ b.style.left = on ? b.dataset.to : "calc(50% - 13px)"; });
+  $("#btnMig").textContent = on ? "⏹ 전류 끄기" : "⚡ 전류 흘려 주기";
+  $("#migNote").className = "note";
+  $("#migNote").innerHTML = exp
+    ? `<b>${exp.nm}</b>(${exp.fm}) — 질산 칼륨 수용액을 적신 페트리 접시 가운데에 한 방울 떨어뜨리고 전류를 흘려 줍니다.<br>`
+      + (on ? exp.obs : "전류를 흘려 주기 전에는 색을 띤 부분이 가운데에 머물러 있어요. 버튼을 눌러 관찰해 보세요.")
+    : (ST.ionD === 0
+        ? "지금은 <b>중성 원자</b>라 전기력을 받지 않습니다. 전자를 옮겨 이온으로 만들어 보세요."
+        : `<b>${ST.ionD>0?"양이온":"음이온"}</b>이므로 <b>${ST.ionD>0?"(−)극":"(+)극"}</b> 쪽으로 이동합니다. 이온이 이동하는 것은 이온이 <b>전하를 띠고 있기</b> 때문입니다.`);
+  $$("#segMig button").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.m === ST.migExp)));
+}
 
-/**
- * ==========================================
- * 4. DOM 요소 캐싱 및 UI 업데이트
- * ==========================================
- */
-const selectEl = document.getElementById('element-select');
-const canvas = document.getElementById('sim-canvas');
-const ctx = canvas.getContext('2d');
-const tooltip = document.getElementById('tooltip');
+/* =====================================================================
+   4. 퀴즈 — 오답 해설 필수, 오답은 리포트에 쌓인다
+   ===================================================================== */
+const QBANK = [
+ {std:"[9과11-02]", q:"원자를 이루는 입자가 <b>아닌</b> 것은?",
+  o:["양성자","중성자","전자","분자"], a:3,
+  ex:"원자는 <b>양성자·중성자·전자</b>로 이루어져 있습니다. 분자는 원자들이 결합해 만들어진 더 큰 입자예요."},
+ {std:"[9과11-02]", q:"원자의 종류를 정하는 것은 무엇의 수일까요?",
+  o:["양성자 수","중성자 수","전자 껍질 수","원자핵의 크기"], a:0,
+  ex:"원자의 종류는 <b>원자핵의 양성자 수</b>로 정해집니다. 그래서 양성자 수를 그대로 <b>원자 번호</b>로 씁니다."},
+ {std:"[9과11-02]", q:"양성자가 8개인 중성 원자의 <b>전자 수</b>는?",
+  o:["6개","8개","10개","16개"], a:1,
+  ex:"원자는 전기적으로 중성이므로 <b>양성자 수 = 전자 수</b>입니다. 양성자가 8개면 전자도 8개(산소 원자)."},
+ {std:"[9과11-02]", q:"원자와 원자를 구성하는 입자에 대한 설명으로 <b>옳지 않은</b> 것은?",
+  o:["원자는 전기적으로 중성이다","양성자는 (+)전하를 띤다","원자핵과 전자는 같은 종류의 전하를 띤다","원자핵은 양성자와 중성자로 이루어져 있다"], a:2,
+  ex:"원자핵은 <b>(+)전하</b>, 전자는 <b>(−)전하</b>로 <b>서로 반대</b>의 전하를 띱니다."},
+ {std:"[9과11-02]", q:"헬륨(He) 원자의 <b>양성자 총전하량</b>은? (양성자 2개)",
+  o:["+1","+2","−2","0"], a:1,
+  ex:"양성자 총전하량 = (+1) × 양성자 수 = (+1) × 2 = <b>+2</b> 입니다."},
+ {std:"[9과11-03]", q:"주기율표에서 <b>가로줄</b>을 무엇이라고 하나요?",
+  o:["족","주기","계열","군"], a:1,
+  ex:"가로줄 7개를 <b>주기</b>, 세로줄 18개를 <b>족</b>이라고 합니다."},
+ {std:"[9과11-03]", q:"리튬(Li)·나트륨(Na)·칼륨(K)의 공통점으로 옳은 것은?",
+  o:["같은 주기에 있다","다른 원소와 거의 반응하지 않는다","물과 격렬하게 반응한다","실온에서 기체이다"], a:2,
+  ex:"모두 <b>1족 원소</b>로 물과 <b>격렬하게 반응</b>합니다. 다른 원소와 거의 반응하지 않는 것은 18족 원소예요."},
+ {std:"[9과11-04]", q:"나트륨 원자(Na)가 전자 1개를 잃으면 만들어지는 이온은?",
+  o:["Na⁻","Na⁺","Na²⁺","Na²⁻"], a:1,
+  ex:"전자를 <b>1개 잃어</b> (+)전하를 띠므로 <b>Na⁺</b>. 잃은 전자가 1개일 때는 숫자 1을 생략합니다."},
+ {std:"[9과11-04]", q:"산소 원자(O)가 전자 2개를 얻어 만들어진 이온의 <b>이름</b>은?",
+  o:["산소 이온","산소화 이온","산화 이온","이산화 이온"], a:2,
+  ex:"음이온은 원소 이름 뒤에 ‘~화 이온’을 붙이는데, 이름이 ‘소’로 끝나면 <b>‘소’를 떼고</b> 붙입니다 → <b>산화 이온(O²⁻)</b>."},
+ {std:"[9과11-04]", q:"이온이 든 수용액에 전류를 흘려 줄 때 <b>양이온</b>이 이동하는 쪽은?",
+  o:["(+)극","(−)극","움직이지 않는다","두 극 모두"], a:1,
+  ex:"(+)전하를 띤 <b>양이온은 (−)극</b>으로, (−)전하를 띤 음이온은 (+)극으로 이동합니다."}
+];
+const QZ = { list:[], i:0, score:0, wrong:[], locked:false };
+function startQuiz(){
+  QZ.list = shuffle(QBANK).slice(0, 8).map(q=>{
+    const idx = q.o.map((t,i)=>i);
+    const sh = shuffle(idx);
+    return {...q, o:sh.map(i=>q.o[i]), a:sh.indexOf(q.a)};
+  });
+  QZ.i = 0; QZ.score = 0; QZ.wrong = []; QZ.locked = false;
+  renderQuiz();
+}
+function renderQuiz(){
+  $("#qTotal").textContent = QZ.list.length;
+  $("#qScore").textContent = QZ.score;
+  $("#qProg").style.width = (QZ.i / QZ.list.length * 100) + "%";
+  const box = $("#qCard");
+  if(QZ.i >= QZ.list.length){
+    const pct = Math.round(QZ.score / QZ.list.length * 100);
+    box.innerHTML = `<div class="qcard" style="text-align:center">
+      <div style="font-size:40px">${pct>=80?"🎉":pct>=60?"👍":"📖"}</div>
+      <div style="font-size:19px;font-weight:900;letter-spacing:-.03em;margin:6px 0 4px">${QZ.list.length}문제 중 ${QZ.score}문제를 맞혔어요</div>
+      <div style="font-size:12.5px;font-weight:700;color:var(--ink-3);line-height:1.7">정답률 ${pct}%${QZ.wrong.length ? ` · 다시 살펴볼 문제 ${QZ.wrong.length}개는 아래와 리포트에 정리해 두었어요.` : " · 모두 맞혔습니다!"}</div>
+      <div class="btn-row" style="justify-content:center;margin-top:14px">
+        <button class="btn pri" onclick="startQuiz()">한 번 더 풀기</button>
+        <button class="btn save" onclick="openReport()">결과 PDF 저장</button>
+      </div></div>`;
+    $("#qProg").style.width = "100%";
+    markDone("quiz");
+    if(pct >= 80) sfx.win();
+    paintWrong();
+    return;
+  }
+  const q = QZ.list[QZ.i];
+  box.innerHTML = `<div class="qcard">
+    <div class="qn">${QZ.i+1} / ${QZ.list.length} · ${q.std}</div>
+    <div class="qq">${q.q}</div>
+    <div class="opts">${q.o.map((t,i)=>`<button class="opt" data-i="${i}"><span class="k">${i+1}</span>${t}</button>`).join("")}</div>
+    <div id="qEx"></div>
+  </div>`;
+  QZ.locked = false;
+  box.querySelectorAll(".opt").forEach(b=>b.onclick = ()=>answer(+b.dataset.i));
+  paintWrong();
+}
+function answer(i){
+  if(QZ.locked) return;
+  QZ.locked = true;
+  const q = QZ.list[QZ.i], ok = i === q.a;
+  const opts = $$("#qCard .opt");
+  opts.forEach((b,k)=>{ b.disabled = true; if(k === q.a) b.classList.add("ok"); });
+  if(!ok){
+    opts[i].classList.add("no");
+    QZ.wrong.push({q:q.q, mine:q.o[i], right:q.o[q.a], ex:q.ex, std:q.std});
+    sfx.no();
+  }else{ QZ.score++; sfx.ok(); }
+  $("#qScore").textContent = QZ.score;
+  $("#qEx").innerHTML = `<div class="explain ${ok?"ok":"no"}">${ok?"정답이에요! ":"다시 살펴볼까요? "}${q.ex}</div>
+    <div class="btn-row" style="margin-top:10px;justify-content:flex-end"><button class="btn pri" id="qNext">다음 문제 ▸</button></div>`;
+  $("#qNext").onclick = ()=>{ QZ.i++; renderQuiz(); };
+  $("#qNext").focus();
+  paintWrong();
+  LS.set("quiz", {score:QZ.score, wrong:QZ.wrong, done:QZ.i+1, total:QZ.list.length});
+}
+function paintWrong(){
+  const has = QZ.wrong.length > 0;
+  $("#qWrongBlk").style.display = has ? "" : "none";
+  if(!has) return;
+  $("#qWrong").innerHTML = QZ.wrong.map(w=>`<div class="wrong-item">
+    <div class="q">${w.q}</div>
+    <div class="a">내가 고른 답 <b style="color:var(--bad)">${esc(w.mine)}</b> · 정답 <b>${esc(w.right)}</b></div>
+    <div class="a" style="margin-top:3px">${w.ex}</div></div>`).join("");
+}
 
-// 드롭다운 메뉴 생성
-elementsData.forEach(el => {
-    const option = document.createElement('option');
-    option.value = el.num;
-    option.textContent = el.name;
-    selectEl.appendChild(option);
-});
+/* =====================================================================
+   5. 탐구 질문 — 서술형 (§9)
+   힌트는 잠그지 않고, 모범 답안을 열람하면 그 문항의 답안이 잠긴다
+   ===================================================================== */
+const INQ = [
+ {id:"q1", std:"[9과11-02]",
+  q:"원자를 이루는 입자 세 가지를 쓰고, 각 입자가 어떤 전하를 띠는지 함께 설명해 보자.",
+  hint:"‘원자 만들기’ 화면 왼쪽 위의 <b>세 배지</b>와 오른쪽 <b>입자 수 조절</b> 칸의 색·기호(＋, −)를 보고 옮겨 적어 보세요.",
+  a:`원자는 <span class="hi">양성자, 중성자, 전자</span>로 이루어져 있습니다. 원자의 중심에는 <span class="hi">원자핵</span>이 있고,
+     원자핵은 <span class="hi">(+)전하를 띠는 양성자</span>와 <span class="hi">전하를 띠지 않는 중성자</span>가 결합해 이루어집니다.
+     원자핵 주위를 움직이는 <span class="hi">전자는 (−)전하</span>를 띱니다.`},
+ {id:"q2", std:"[9과11-02]",
+  q:"양성자 수를 바꾸면 원소의 종류가 달라지는데, 중성자 수를 바꾸면 달라지지 않는다. 그 까닭을 설명해 보자.",
+  hint:"양성자 칸의 ＋ − 를 눌러 보고 오른쪽 <b>‘이 원자는 무엇일까?’</b> 카드가 어떻게 바뀌는지 본 다음, 중성자 칸으로 같은 일을 해 보세요.",
+  a:`원자의 종류는 <span class="hi">원자핵의 양성자 수</span>로 정해지기 때문입니다.
+     양성자 수를 그대로 <span class="hi">원자 번호</span>로 쓰고, 원자 번호가 달라지면 다른 원소가 됩니다.
+     중성자는 전하를 띠지 않고 원소를 구별하는 기준도 아니므로, 중성자 수가 달라져도 원소의 종류는 그대로입니다.`},
+ {id:"q3", std:"[9과11-02]",
+  q:"원자가 전기적으로 중성인 까닭을 총전하량을 이용해 설명해 보자.",
+  hint:"오른쪽 <b>총전하량 계산</b> 칸에서 양성자 줄과 전자 줄의 값을 더했을 때 <b>합계가 0</b>이 되는 과정을 문장으로 옮겨 보세요.",
+  a:`한 원자를 이루는 <span class="hi">양성자 수와 전자 수가 같기</span> 때문입니다.
+     양성자 총전하량은 (+1)×양성자 수, 전자 총전하량은 (−1)×전자 수이므로 두 값의 크기는 같고 부호만 반대입니다.
+     따라서 둘을 더하면 <span class="hi">0</span>이 되어 원자는 전기적으로 중성입니다.`},
+ {id:"q4", std:"[9과11-03]",
+  q:"주기율표에서 리튬(Li)·나트륨(Na)·칼륨(K)이 같은 세로줄에 놓여 있다. 이렇게 배치하면 어떤 점이 좋은지 설명해 보자.",
+  hint:"‘주기율표 1~30’ 탭에서 Li 칸에 마우스를 올려 <b>함께 빛나는 원소</b>를 확인하고, 아래 <b>1족 원소</b> 카드의 성질을 견주어 보세요.",
+  a:`세 원소는 모두 <span class="hi">1족</span>이고 물과 격렬하게 반응하는 등 <span class="hi">성질이 비슷</span>합니다.
+     과학자들은 비슷한 성질을 가진 원소가 <span class="hi">같은 족</span>에 오도록 주기율표를 만들었습니다.
+     그래서 성질을 모르는 원소라도 <span class="hi">같은 족의 다른 원소의 성질을 알면 그 원소의 성질을 예측</span>할 수 있습니다.`},
+ {id:"q5", std:"[9과11-04]",
+  q:"나트륨 원자(Na)가 나트륨 이온(Na⁺)이 되는 과정을 전자의 이동으로 설명해 보자.",
+  hint:"‘이온 만들기’ 탭에서 <b>− 전자 잃기</b>를 한 번 누르고, 배지의 <b>양성자 수·전자 수·전하</b>가 각각 어떻게 바뀌는지 확인해 보세요.",
+  a:`나트륨 원자는 양성자 11개, 전자 11개로 전기적으로 중성입니다.
+     여기서 <span class="hi">전자 1개를 잃으면</span> 전자는 10개가 되고 양성자 수는 11개 그대로입니다.
+     그러면 <span class="hi">(+)전하의 양이 상대적으로 많아져</span> +1의 전하를 띤 <span class="hi">양이온 Na⁺</span>가 됩니다.`}
+];
+const ANS = LS.get("ans", {}), LOCK = LS.get("lock", {}), HINT = LS.get("hint", {});
+const ANS_MIN = 20;
+let lockTarget = null, saveT = null;
 
-// UI 텍스트 업데이트
-const updateUI = () => {
-    if (state.quizMode) return; // 퀴즈 모드일 때는 UI 업데이트 생략
-    
-    const el = state.currentElement;
-    document.getElementById('info-name').textContent = el.name;
-    document.getElementById('info-num').textContent = el.num;
-    document.getElementById('info-nucleus-charge').textContent = `+${el.num}`;
-    document.getElementById('info-electron-count').textContent = `-${el.num}`;
-    document.getElementById('info-config').textContent = el.configStr;
-    document.getElementById('desc-n-charge').textContent = `+${el.num}`;
-    document.getElementById('desc-e-charge').textContent = `-${el.num}`;
-    
-    selectEl.value = el.num;
-};
+function inqDone(id){ return ((ANS[id]||"").trim().length >= 5); }
+function inqReady(id){ return ((ANS[id]||"").trim().length >= ANS_MIN); }
+function saveAns(){ clearTimeout(saveT); saveT = setTimeout(()=>LS.set("ans", ANS), 250); }
 
-/**
- * ==========================================
- * 5. 캔버스 렌더링 엔진
- * ==========================================
- */
-let activeElectrons = []; // 마우스 인터랙션을 위한 전자 좌표 저장 배열
-let canvasCenterX = 0;
-let canvasCenterY = 0;
+function renderInq(){
+  $("#inqList").innerHTML = INQ.map((it,i)=>{
+    const val = ANS[it.id] || "", locked = !!LOCK[it.id], done = inqDone(it.id);
+    return `<div class="inq${done?" done":""}${locked?" lock":""}" data-id="${it.id}">
+      <button class="inq-q" aria-expanded="false">
+        <span class="no">${locked ? "🔒" : done ? "✓" : i+1}</span>
+        <span class="tx">${esc(it.q)}<span class="std">${it.std}</span></span>
+        <span class="cv" aria-hidden="true">▾</span>
+      </button>
+      <div class="inq-b">
+        <textarea placeholder="관찰한 내용을 바탕으로 내 문장으로 설명해 보세요. (두세 문장이면 충분합니다)"
+          aria-label="${esc(it.q)} 답안"${locked?" readonly":""}>${esc(val)}</textarea>
+        <div class="inq-meta">
+          <span class="cc${val.trim().length>=ANS_MIN?" ok":""}">${val.trim().length}자${val.trim().length<ANS_MIN?` · ${ANS_MIN}자 이상 쓰면 모범 답안을 열 수 있어요`:""}</span>
+          ${HINT[it.id] ? '<span class="tagx hint">💡 힌트 봄</span>' : ""}
+          ${locked ? '<span class="tagx lock">🔒 모범 답안 열람 · 수정 잠김</span>' : done ? '<span class="tagx done">작성함</span>' : ""}
+          <button class="btn sm" data-act="hint">💡 힌트 보기</button>
+          <button class="btn sm" data-act="ans"${(!inqReady(it.id) && !locked) ? " disabled" : ""}>📖 모범 답안 보기</button>
+        </div>
+        <div class="slot"></div>
+      </div>
+    </div>`;
+  }).join("");
 
-// 캔버스 크기 반응형 조절
-const resizeCanvas = () => {
-    const container = document.getElementById('canvas-container');
-    // 고해상도 디스플레이(Retina 등) 대응을 위해 pixelRatio 적용
-    const dpr = window.devicePixelRatio || 1;
-    const rect = container.getBoundingClientRect();
-    
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    
-    ctx.scale(dpr, dpr);
-    canvas.style.width = `${rect.width}px`;
-    canvas.style.height = `${rect.height}px`;
-    
-    canvasCenterX = rect.width / 2;
-    canvasCenterY = rect.height / 2;
-};
-window.addEventListener('resize', resizeCanvas);
-
-// 메인 그리기 루프
-const draw = () => {
-    const rect = canvas.getBoundingClientRect();
-    ctx.clearRect(0, 0, rect.width, rect.height);
-    
-    ctx.save();
-    ctx.translate(canvasCenterX, canvasCenterY);
-    ctx.scale(state.scale, state.scale);
-
-    const el = state.quizMode && state.quizTarget ? state.quizTarget : state.currentElement;
-    
-    // 전자껍질 설정
-    const shells = [
-        { count: el.k, radius: 70, color: '#ffee58', name: 'K껍질', speedMult: 1.5 },
-        { count: el.l, radius: 130, color: '#66bb6a', name: 'L껍질', speedMult: 1.0 },
-        { count: el.m, radius: 190, color: '#ab47bc', name: 'M껍질', speedMult: 0.7 },
-        { count: el.n, radius: 250, color: '#26c6da', name: 'N껍질', speedMult: 0.5 }
-    ];
-
-    activeElectrons = []; // 루프마다 초기화
-
-    // 1. 궤도(전자껍질) 그리기
-    shells.forEach((shell) => {
-        if (shell.count > 0) {
-            ctx.beginPath();
-            ctx.arc(0, 0, shell.radius, 0, Math.PI * 2);
-            // 호버된 껍질은 강조
-            if (state.hoveredShell === shell.name) {
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2;
-                ctx.shadowColor = shell.color;
-                ctx.shadowBlur = 10;
-            } else {
-                ctx.strokeStyle = shell.color;
-                ctx.lineWidth = 1;
-                ctx.shadowBlur = 0;
-            }
-            ctx.setLineDash([5, 5]);
-            ctx.stroke();
-            ctx.setLineDash([]);
-            ctx.shadowBlur = 0;
-        }
+  $$("#inqList .inq").forEach(card=>{
+    const id = card.dataset.id, it = INQ.find(x=>x.id === id);
+    const ta = card.querySelector("textarea");
+    card.querySelector(".inq-q").onclick = ()=>{
+      const open = card.classList.toggle("open");
+      card.querySelector(".inq-q").setAttribute("aria-expanded", String(open));
+      if(open && !LOCK[id]) setTimeout(()=>ta.focus(), 60);
+    };
+    ta.addEventListener("input", ()=>{
+      ANS[id] = ta.value; saveAns();
+      const n = ta.value.trim().length;
+      const cc = card.querySelector(".cc");
+      cc.textContent = `${n}자${n<ANS_MIN?` · ${ANS_MIN}자 이상 쓰면 모범 답안을 열 수 있어요`:""}`;
+      cc.classList.toggle("ok", n >= ANS_MIN);
+      card.querySelector('[data-act="ans"]').disabled = n < ANS_MIN;
+      card.classList.toggle("done", n >= 5);
+      card.querySelector(".no").textContent = LOCK[id] ? "🔒" : (n >= 5 ? "✓" : String(INQ.indexOf(it)+1));
+      paintInqCount();
+      if(n >= 5) markDone("inq");
     });
+    card.querySelector('[data-act="hint"]').onclick = ()=>{
+      const slot = card.querySelector(".slot");
+      const has = slot.querySelector(".panel-hint");
+      if(has){ has.remove(); return; }
+      HINT[id] = 1; LS.set("hint", HINT);
+      const d = document.createElement("div");
+      d.className = "panel-hint";
+      d.innerHTML = `<div class="ttl">💡 어디를 보면 될까요?</div>${it.hint}
+        <span class="free">힌트는 답안을 잠그지 않아요 — 몇 번이든 열어 보고 이어서 고쳐 써도 됩니다.</span>`;
+      slot.prepend(d);
+      if(!card.querySelector(".tagx.hint")){
+        const t = document.createElement("span"); t.className = "tagx hint"; t.textContent = "💡 힌트 봄";
+        card.querySelector(".inq-meta").insertBefore(t, card.querySelector(".inq-meta .cc").nextSibling);
+      }
+    };
+    card.querySelector('[data-act="ans"]').onclick = ()=>{
+      if(LOCK[id]){ showAns(card, it); return; }
+      lockTarget = {card, it};
+      openM("#mLock");
+    };
+    if(LOCK[id]) showAns(card, it);
+  });
+  paintInqCount();
+}
+function showAns(card, it){
+  const slot = card.querySelector(".slot");
+  if(slot.querySelector(".panel-ans")) return;
+  const d = document.createElement("div");
+  d.className = "panel-ans";
+  d.innerHTML = `<div class="ttl">📖 모범 답안 · 이렇게 쓰면 좋아요</div>${it.a}`;
+  slot.appendChild(d);
+}
+function doLock(){
+  if(!lockTarget) return;
+  const {card, it} = lockTarget;
+  LOCK[it.id] = 1; LS.set("lock", LOCK);
+  const ta = card.querySelector("textarea");
+  ta.readOnly = true;
+  card.classList.add("lock");
+  card.querySelector(".no").textContent = "🔒";
+  const meta = card.querySelector(".inq-meta");
+  if(!meta.querySelector(".tagx.lock")){
+    const t = document.createElement("span"); t.className = "tagx lock"; t.textContent = "🔒 모범 답안 열람 · 수정 잠김";
+    meta.insertBefore(t, meta.querySelector('[data-act="hint"]'));
+  }
+  showAns(card, it);
+  lockTarget = null;
+  toast("모범 답안을 열었어요. 이 문항의 답안은 그대로 남겨 두었습니다");
+}
+function paintInqCount(){
+  const n = INQ.filter(x=>inqDone(x.id)).length;
+  $("#inqCnt").textContent = `${n} / ${INQ.length} 작성`;
+}
 
-    // 2. 원자핵 그리기
-    const baseNucleusRadius = 20;
-    const nucleusRadius = baseNucleusRadius + (el.num * 0.4);
-    const gradient = ctx.createRadialGradient(0, -nucleusRadius/3, 0, 0, 0, nucleusRadius);
-    gradient.addColorStop(0, '#ff8a80');
-    gradient.addColorStop(1, '#c62828');
-    
-    ctx.beginPath();
-    ctx.arc(0, 0, nucleusRadius, 0, Math.PI * 2);
-    ctx.fillStyle = gradient;
-    ctx.shadowColor = '#f44336';
-    ctx.shadowBlur = 25;
-    ctx.fill();
-    ctx.shadowBlur = 0;
+/* =====================================================================
+   이론 학습 드로어 (§8) — 도해 카드 한 장씩
+   SVG 색은 토큰 문자열로 적어 두고 테마에 맞춰 주입한다 (§14)
+   ===================================================================== */
+function inject(svg){
+  const c = getComputedStyle(document.documentElement);
+  const map = { FG:"--ink", FG2:"--ink-2", FG3:"--ink-3", LINE:"--line-2",
+                PANEL:"--panel", PANEL2:"--panel-2", P:"--p", N:"--n", E:"--e", GOLD:"--gold", BR:"--brand" };
+  return svg.replace(/\{(\w+)\}/g, (m,k)=> map[k] ? (c.getPropertyValue(map[k]).trim() || "#888") : m);
+}
+const THEORY = [
+ {t:"원자 — 원소를 구성하는 입자",
+  fig:`<svg viewBox="0 0 320 170">
+    <ellipse cx="160" cy="85" rx="118" ry="62" fill="none" stroke="{LINE}" stroke-width="1.5" stroke-dasharray="5 6"/>
+    <circle cx="118" cy="80" r="12" fill="{P}"/><text x="118" y="85" text-anchor="middle" font-size="13" font-weight="900" fill="#fff">+</text>
+    <circle cx="142" cy="92" r="12" fill="{N}"/>
+    <circle cx="138" cy="68" r="12" fill="{N}"/>
+    <circle cx="160" cy="78" r="12" fill="{P}"/><text x="160" y="83" text-anchor="middle" font-size="13" font-weight="900" fill="#fff">+</text>
+    <circle cx="278" cy="85" r="10" fill="{E}"/><text x="278" y="90" text-anchor="middle" font-size="12" font-weight="900" fill="#fff">−</text>
+    <circle cx="42" cy="85" r="10" fill="{E}"/><text x="42" y="90" text-anchor="middle" font-size="12" font-weight="900" fill="#fff">−</text>
+    <line x1="140" y1="46" x2="140" y2="22" stroke="{LINE}" stroke-width="1.2"/>
+    <text x="140" y="16" text-anchor="middle" font-size="12" font-weight="800" fill="{FG2}">원자핵 (양성자 + 중성자)</text>
+    <line x1="278" y1="72" x2="278" y2="52" stroke="{LINE}" stroke-width="1.2"/>
+    <text x="276" y="46" text-anchor="middle" font-size="12" font-weight="800" fill="{FG2}">전자</text>
+  </svg>`,
+  def:"원자는 원자핵과 전자로 이루어져 있습니다.",
+  tx:`원자의 중심에는 <b>(+)전하를 띠는 원자핵</b>이 있고, 그 주위를 <b>(−)전하를 띠는 전자</b>가 움직입니다.
+      원자핵은 <b>양성자</b>와 <b>중성자</b>가 결합해 이루어집니다. 양성자는 (+)전하를, 중성자는 전하를 띠지 않습니다.`,
+  link:"‘원자 만들기’에서 세 입자의 수를 바꿔 보면, 화면 가운데 원자가 바로 다시 만들어집니다."},
 
-    // 원자핵 내부 텍스트 (+전하량)
-    ctx.fillStyle = 'white';
-    ctx.font = `bold ${12 + (el.num*0.2)}px Arial`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(state.quizMode ? '+?' : `+${el.num}`, 0, 0);
+ {t:"원자 모형 — 간단히 나타내기",
+  fig:`<svg viewBox="0 0 320 170">
+    <circle cx="88" cy="85" r="46" fill="none" stroke="{LINE}" stroke-width="1.4" stroke-dasharray="4 5"/>
+    <circle cx="72" cy="82" r="10" fill="{P}"/><circle cx="90" cy="76" r="10" fill="{N}"/>
+    <circle cx="86" cy="94" r="10" fill="{P}"/><circle cx="102" cy="88" r="10" fill="{N}"/>
+    <circle cx="88" cy="39" r="8" fill="{E}"/><circle cx="88" cy="131" r="8" fill="{E}"/>
+    <path d="M148 85h30" stroke="{FG3}" stroke-width="2"/><path d="M172 79l8 6-8 6" fill="none" stroke="{FG3}" stroke-width="2"/>
+    <text x="163" y="70" text-anchor="middle" font-size="11" font-weight="800" fill="{FG3}">간단히</text>
+    <circle cx="248" cy="85" r="46" fill="none" stroke="{LINE}" stroke-width="1.4" stroke-dasharray="4 5"/>
+    <circle cx="248" cy="85" r="21" fill="{P}"/>
+    <text x="248" y="92" text-anchor="middle" font-size="19" font-weight="900" fill="#fff">+2</text>
+    <circle cx="248" cy="39" r="8" fill="{E}"/><circle cx="248" cy="131" r="8" fill="{E}"/>
+  </svg>`,
+  def:"원자핵에 양성자 수만큼의 (+)전하량을 적어 간단히 나타냅니다.",
+  tx:`양성자는 하나가 <b>+1</b>의 전하를 띠므로, 양성자가 2개인 헬륨의 원자핵은 <b>+2</b>입니다.
+      중성자는 전하가 <b>0</b>이라 이 값에 더해지지 않습니다. 그래서 원자핵과 전자만으로 원자를 나타낼 수 있습니다.`,
+  link:"무대의 <b>‘원자핵으로 합치기’</b> 버튼을 누르면 이 두 그림이 실제로 이어지는 장면을 볼 수 있습니다."},
 
-    // 3. 전자 그리기
-    shells.forEach((shell) => {
-        if (shell.count === 0) return;
-        const angleStep = (Math.PI * 2) / shell.count;
-        const currentAngleOffset = state.time * shell.speedMult;
+ {t:"양성자 수 = 원자 번호 = 원소의 종류",
+  fig:`<svg viewBox="0 0 320 170">
+    ${[["+3","리튬 Li",60],["+6","탄소 C",160],["+8","산소 O",260]].map(([c,nm,x])=>`
+      <circle cx="${x}" cy="72" r="27" fill="{P}"/>
+      <text x="${x}" y="80" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">${c}</text>
+      <text x="${x}" y="122" text-anchor="middle" font-size="13" font-weight="800" fill="{FG}">${nm}</text>
+      <text x="${x}" y="142" text-anchor="middle" font-size="11" font-weight="700" fill="{FG3}">양성자 ${c.slice(1)}개</text>`).join("")}
+  </svg>`,
+  def:"원자의 종류는 원자핵의 양성자 수로 결정됩니다.",
+  tx:`대부분의 원자를 구성하는 입자의 종류는 양성자·중성자·전자로 같지만,
+      <b>양성자 수가 달라지면 원자의 종류가 바뀝니다.</b>
+      그래서 양성자 수를 숫자로 나타낸 것을 <b>원자 번호</b>라고 하고, 원자 번호로 원자의 종류를 구별합니다.`,
+  link:"양성자 칸의 ＋ − 를 눌러 보세요. 숫자가 바뀌는 순간 원소 이름이 함께 바뀝니다."},
 
-        for (let i = 0; i < shell.count; i++) {
-            const angle = (angleStep * i) + currentAngleOffset;
-            const x = Math.cos(angle) * shell.radius;
-            const y = Math.sin(angle) * shell.radius;
-            const isHovered = (state.hoveredElectron && state.hoveredElectron.shellName === shell.name && state.hoveredElectron.index === i + 1);
+ {t:"주기율표 — 주기와 족",
+  fig:`<svg viewBox="0 0 320 170">
+    <text x="10" y="26" font-size="11" font-weight="800" fill="{FG3}">족 →</text>
+    <text x="10" y="150" font-size="11" font-weight="800" fill="{FG3}">↓ 주기</text>
+    ${[0,1,2,3].map(r=>[0,1,2,3,4,5,6,7].map(cIdx=>{
+      const on = (r===0&&cIdx===0)||(r===0&&cIdx===7)||(r>0);
+      const hi = cIdx===0;
+      return `<rect x="${44+cIdx*32}" y="${34+r*28}" width="27" height="23" rx="4"
+        fill="${on ? (hi ? "{GOLD}" : "{PANEL2}") : "none"}" stroke="{LINE}" stroke-width="1"/>`;
+    }).join("")).join("")}
+    <text x="57" y="50" text-anchor="middle" font-size="11" font-weight="900" fill="{FG}">H</text>
+    <text x="57" y="78" text-anchor="middle" font-size="11" font-weight="900" fill="{FG}">Li</text>
+    <text x="57" y="106" text-anchor="middle" font-size="11" font-weight="900" fill="{FG}">Na</text>
+    <text x="57" y="134" text-anchor="middle" font-size="11" font-weight="900" fill="{FG}">K</text>
+    <text x="268" y="163" text-anchor="middle" font-size="11" font-weight="800" fill="{FG3}">같은 족 = 비슷한 성질</text>
+  </svg>`,
+  def:"원소를 원자 번호 순으로 배열한 표가 주기율표입니다.",
+  tx:`주기율표는 가로줄 <b>7개</b>와 세로줄 <b>18개</b>로 나누어져 있습니다.
+      가로줄을 <b>주기</b>, 세로줄을 <b>족</b>이라고 합니다. 원소는 <b>양성자 수(원자 번호)</b> 순서대로 배치됩니다.`,
+  link:"‘주기율표 1~30’ 탭에서 칸에 마우스를 올리면 같은 족 원소가 함께 빛납니다."},
 
-            // 전자 본체
-            ctx.beginPath();
-            const electronRadius = isHovered ? 8 : 6;
-            ctx.arc(x, y, electronRadius, 0, Math.PI * 2);
-            
-            const eGradient = ctx.createRadialGradient(x, y-2, 0, x, y, electronRadius);
-            eGradient.addColorStop(0, '#80d8ff');
-            eGradient.addColorStop(1, '#0277bd');
-            ctx.fillStyle = eGradient;
-            
-            ctx.shadowColor = '#40c4ff';
-            ctx.shadowBlur = isHovered ? 20 : 10;
-            ctx.fill();
-            ctx.shadowBlur = 0;
+ {t:"같은 족 원소의 유사성",
+  fig:`<svg viewBox="0 0 320 170">
+    <rect x="18" y="24" width="130" height="124" rx="10" fill="{PANEL2}" stroke="{LINE}"/>
+    <rect x="172" y="24" width="130" height="124" rx="10" fill="{PANEL2}" stroke="{LINE}"/>
+    <text x="83" y="46" text-anchor="middle" font-size="12" font-weight="900" fill="{P}">1족 원소</text>
+    <text x="237" y="46" text-anchor="middle" font-size="12" font-weight="900" fill="{BR}">18족 원소</text>
+    <text x="83" y="68" text-anchor="middle" font-size="12" font-weight="800" fill="{FG}">Li · Na · K</text>
+    <text x="237" y="68" text-anchor="middle" font-size="12" font-weight="800" fill="{FG}">He · Ne · Ar</text>
+    <text x="83" y="94" text-anchor="middle" font-size="11" font-weight="700" fill="{FG2}">실온에서 고체</text>
+    <text x="83" y="114" text-anchor="middle" font-size="11" font-weight="700" fill="{FG2}">물과 격렬히 반응</text>
+    <text x="237" y="94" text-anchor="middle" font-size="11" font-weight="700" fill="{FG2}">실온에서 기체</text>
+    <text x="237" y="114" text-anchor="middle" font-size="11" font-weight="700" fill="{FG2}">거의 반응하지 않음</text>
+  </svg>`,
+  def:"비슷한 성질을 가진 원소가 같은 족에 오도록 배치했습니다.",
+  tx:`<b>1족 원소</b>는 물과 격렬하게 반응하고, <b>18족 원소</b>는 안정하여 다른 원소와 거의 반응하지 않습니다.
+      그래서 성질을 모르는 원소라도 <b>같은 족에 속한 다른 원소의 성질</b>을 알면 그 원소의 성질을 예측할 수 있습니다.`,
+  link:"‘주기율표 1~30’ 탭 아래의 <b>1족 · 18족 원소 카드</b>에서 성질을 나란히 견주어 보세요."},
 
-            // 전자 내부 기호 (-)
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 12px Arial';
-            ctx.fillText('-', x, y);
+ {t:"이온 — 전자를 잃거나 얻은 입자",
+  fig:`<svg viewBox="0 0 320 170">
+    <circle cx="66" cy="80" r="40" fill="none" stroke="{LINE}" stroke-width="1.3" stroke-dasharray="4 5"/>
+    <circle cx="66" cy="80" r="19" fill="{P}"/><text x="66" y="86" text-anchor="middle" font-size="14" font-weight="900" fill="#fff">+3</text>
+    <circle cx="66" cy="40" r="7" fill="{E}"/><circle cx="30" cy="96" r="7" fill="{E}"/><circle cx="102" cy="96" r="7" fill="{E}"/>
+    <text x="66" y="141" text-anchor="middle" font-size="12" font-weight="800" fill="{FG2}">리튬 원자 Li</text>
+    <path d="M124 80h44" stroke="{FG3}" stroke-width="2"/><path d="M162 74l8 6-8 6" fill="none" stroke="{FG3}" stroke-width="2"/>
+    <text x="146" y="68" text-anchor="middle" font-size="10.5" font-weight="800" fill="{FG3}">전자를 잃음</text>
+    <circle cx="246" cy="80" r="40" fill="none" stroke="{LINE}" stroke-width="1.3" stroke-dasharray="4 5"/>
+    <circle cx="246" cy="80" r="19" fill="{P}"/><text x="246" y="86" text-anchor="middle" font-size="14" font-weight="900" fill="#fff">+3</text>
+    <circle cx="210" cy="96" r="7" fill="{E}"/><circle cx="282" cy="96" r="7" fill="{E}"/>
+    <text x="246" y="141" text-anchor="middle" font-size="12" font-weight="800" fill="{FG2}">리튬 이온 Li⁺</text>
+  </svg>`,
+  def:"원자에서 전자가 이동하여 전하를 띠게 된 입자를 이온이라고 합니다.",
+  tx:`원자가 <b>전자를 잃으면</b> (+)전하의 양이 상대적으로 많아져 <b>양이온</b>이 되고,
+      <b>전자를 얻으면</b> (−)전하의 양이 많아져 <b>음이온</b>이 됩니다.
+      이온식은 원소 기호 오른쪽 위에 <b>잃거나 얻은 전자 수와 전하의 종류</b>를 함께 씁니다. 1개일 때는 숫자를 생략해요.`,
+  link:"‘이온 만들기’ 탭에서 전자를 옮기면 이온식과 이름이 자동으로 만들어집니다."},
 
-            // 마우스 인터랙션을 위한 화면 좌표 저장 (중심점 0,0 기준)
-            activeElectrons.push({
-                x, y, r: electronRadius, shellName: shell.name, index: i + 1, shellRadius: shell.radius
-            });
-        }
+ {t:"원자 모형의 변천",
+  fig:"", hist:true,
+  def:"원자는 눈으로 볼 수 없어 모형으로 설명해 왔습니다.",
+  tx:`새로운 실험 결과가 나올 때마다 과학자들은 원자 모형을 고쳤습니다.
+      이 실험실에서 쓰는 모형은 전자가 정해진 껍질을 따라 도는 <b>보어의 모형</b>입니다.
+      과학 지식은 이렇게 <b>더 나은 설명으로 바뀌어 간다</b>는 점도 함께 기억해 두세요.`,
+  link:"화면의 원자 모형은 ‘보어 모형’입니다. 전자 껍질이 뚜렷하게 나뉘어 보이는 것이 그 특징이에요.",
+  more:`돌턴은 원자를 더 이상 쪼개지지 않는 단단한 공으로 보았고, 톰슨은 (+)전하를 띤 물질에 전자가 박혀 있다고 보았습니다.
+        러더퍼드가 원자핵을 발견하면서 원자의 중심에 (+)전하가 모여 있다는 것이 밝혀졌고, 보어는 전자가 특정한 궤도를 돈다고 설명했습니다.
+        현대에는 전자가 원자핵 주위에 구름처럼 퍼져 있다고 봅니다.`}
+];
+const HIST = [
+ {cls:"f-dalton", nm:"돌턴", ds:"더 이상 쪼개지지 않는 단단한 공", inner:""},
+ {cls:"f-thomson", nm:"톰슨", ds:"(+)전하 속에 전자가 박힌 모형",
+  inner:`<span class="f-pl" style="left:50%;top:26%">+</span><span class="f-pl" style="left:26%;top:66%">+</span><span class="f-pl" style="left:74%;top:66%">+</span>
+         <span class="f-dot f-e" style="left:32%;top:34%"></span><span class="f-dot f-e" style="left:70%;top:40%"></span><span class="f-dot f-e" style="left:50%;top:74%"></span>`},
+ {cls:"f-ruther", nm:"러더퍼드", ds:"중심의 원자핵 주위를 전자가 돎",
+  inner:`<span class="f-orb" style="width:64px;height:24px"></span><span class="f-orb" style="width:64px;height:24px;transform:translate(-50%,-50%) rotate(60deg)"></span>
+         <span class="f-orb" style="width:64px;height:24px;transform:translate(-50%,-50%) rotate(120deg)"></span>
+         <span class="f-dot f-core"></span><span class="f-dot f-e" style="left:14%;top:56%"></span><span class="f-dot f-e" style="left:84%;top:38%"></span>`},
+ {cls:"f-bohr", nm:"보어", ds:"전자가 일정한 껍질을 따라 운동",
+  inner:`<span class="f-orb" style="width:34px;height:34px"></span><span class="f-orb" style="width:60px;height:60px"></span>
+         <span class="f-dot f-core"></span>
+         <span class="f-dot f-e" style="left:50%;top:28%"></span><span class="f-dot f-e" style="left:50%;top:72%"></span>
+         <span class="f-dot f-e" style="left:11%;top:50%"></span><span class="f-dot f-e" style="left:89%;top:50%"></span>`},
+ {cls:"f-modern", nm:"현대", ds:"전자가 구름처럼 퍼져 있는 모형",
+  inner:`<span class="f-dot f-core" style="width:9px;height:9px"></span>`}
+];
+const TH = { i:0 };
+function renderTheory(){
+  const c = THEORY[TH.i];
+  $("#thPg").textContent = `${TH.i+1} / ${THEORY.length}`;
+  $("#thBody").innerHTML =
+    `<div class="th-fig">${c.hist
+        ? `<div class="hist">${HIST.map(h=>`<div class="hist-i"><div class="fig ${h.cls}">${h.inner}</div><div class="nm">${h.nm}</div><div class="ds">${h.ds}</div></div>`).join("")}</div>`
+        : inject(c.fig)}</div>
+     <div class="th-def">${c.def}</div>
+     <div class="th-tx">${c.tx}</div>
+     <div class="th-link">🔬 <b>실험과 이어 보기</b><br>${c.link}</div>
+     ${c.more ? `<details class="th-more"><summary>더 알아보기</summary><div class="bd">${c.more}</div></details>` : ""}`;
+  $("#thDots").innerHTML = THEORY.map((_,i)=>`<i class="${i===TH.i?"on":""}"></i>`).join("");
+  $("#thPrev").disabled = TH.i === 0;
+  $("#thNext").disabled = TH.i === THEORY.length-1;
+}
+function openTheory(i){
+  if(i !== undefined) TH.i = i;
+  renderTheory();
+  $("#drawer").classList.add("open");
+  $("#thScrim").classList.add("open");
+}
+function closeTheory(){ $("#drawer").classList.remove("open"); $("#thScrim").classList.remove("open"); }
+
+/* =====================================================================
+   학습 리포트 · 학습지 (§10) — 인쇄 전용 뷰 + window.print()
+   ===================================================================== */
+function openM(sel){ $(sel).classList.add("open"); }
+function closeM(sel){ $(sel).classList.remove("open"); }
+function askStu(next){
+  stuNext = next;
+  ["grade","cls","no","name"].forEach(k=>{
+    const el = $("#s" + k[0].toUpperCase() + k.slice(1));
+    if(el) el.value = STU[k] || "";
+  });
+  $("#sGrade").value = STU.grade; $("#sCls").value = STU.cls;
+  $("#sNo").value = STU.no; $("#sName").value = STU.name;
+  openM("#mStu");
+  setTimeout(()=>$(STU.name ? "#stuGo" : "#sGrade").focus(), 80);
+}
+function openReport(){ askStu("report"); }
+
+let secNo = 0;
+const H = t => `<h2>${++secNo}. ${t}</h2>`;
+function buildPrint(){
+  secNo = 0;
+  const blank = $("#ckBlank").checked;
+  const withAns = $("#ckAns").checked && !blank;
+  const key = $("#ckKey").checked;
+  const e = EL(ST.p), chg = ST.p - ST.e;
+  let h = "";
+
+  h += `<h1>${blank ? "원자의 구조 학습지" : "원자의 구조 학습 리포트"}</h1>
+    <div class="phead">
+      <span><b>학번</b> ${blank && !stuLabel() ? "____________" : esc(stuLabel() || "____________")}</span>
+      <span><b>날짜</b> ${todayKo()}</span>
+      <span><b>단원</b> 중학교 과학 Ⅳ. 물질의 구성</span>
+      <span><b>성취기준</b> [9과11-02] [9과11-03] [9과11-04]</span>
+    </div>`;
+
+  if(!blank && $("#ckModel").checked){
+    h += H("내가 만든 원자");
+    h += `<table><tr><th>양성자 수</th><th>중성자 수</th><th>전자 수</th><th>총전하량</th><th>이 입자는?</th></tr>
+      <tr><td>${ST.p}</td><td>${ST.n}</td><td>${ST.e}</td><td>${chgTx(chg)}</td>
+      <td>${esc(chg === 0 ? e.kor + " 원자 (중성)" : ionTx(e.sym,chg) + " " + ionName(e,chg))}</td></tr></table>
+      <div class="pnote" style="margin-top:2mm">양성자 수가 ${ST.p}개이므로 원자 번호 ${e.z}번 ${esc(e.kor)}(${e.sym})입니다.</div>`;
+  }
+
+  if($("#ckInq").checked){
+    h += H("탐구 질문 — 서술형");
+    INQ.forEach((it,i)=>{
+      const val = (ANS[it.id] || "").trim();
+      const tags = [];
+      if(!blank){
+        tags.push(LOCK[it.id] ? "모범 답안 열람함" : (val ? "열람 전 스스로 작성" : "미작성"));
+        if(HINT[it.id]) tags.push("힌트 봄");
+      }
+      h += `<div class="pq">
+        <div class="t">${i+1}. ${esc(it.q)} <span style="font-size:8.5pt;font-weight:700">${it.std}</span></div>
+        ${tags.length ? `<div class="tags">${tags.join(" · ")}</div>` : ""}
+        <div class="lbl">내가 쓴 답안</div>
+        ${blank ? '<div class="lines"></div><div class="lines"></div><div class="lines"></div><div class="lines"></div><div class="lines"></div>'
+                : `<div class="box">${esc(val) || "(작성하지 않았습니다)"}</div>`}
+        ${withAns ? `<div class="lbl">모범 답안</div><div class="box">${it.a.replace(/<[^>]*>/g,"")}</div>` : ""}
+      </div>`;
     });
+  }
 
-    ctx.restore();
-
-    // 애니메이션 시간 업데이트
-    if (state.isPlaying) {
-        state.time += 0.01 * state.speed;
+  if($("#ckQuiz").checked && !blank && (QZ.i > 0 || QZ.wrong.length)){
+    h += H("퀴즈 결과");
+    h += `<table><tr><th>푼 문제</th><th>맞힌 문제</th><th>정답률</th></tr>
+      <tr><td>${Math.min(QZ.i, QZ.list.length)}문제</td><td>${QZ.score}문제</td>
+      <td>${QZ.i ? Math.round(QZ.score/Math.min(QZ.i,QZ.list.length)*100) : 0}%</td></tr></table>`;
+    if(QZ.wrong.length){
+      h += H("오답 노트 — 다시 살펴볼 문제");
+      h += `<table><tr><th style="width:44%">문제</th><th>내가 고른 답</th><th>정답</th><th style="width:32%">해설</th></tr>`
+        + QZ.wrong.map(w=>`<tr><td>${esc(w.q.replace(/<[^>]*>/g,""))}</td><td>${esc(w.mine)}</td><td>${esc(w.right)}</td><td>${esc(w.ex.replace(/<[^>]*>/g,""))}</td></tr>`).join("")
+        + `</table>`;
+      h += H("오답 학습지 — 직접 다시 써 보기");
+      QZ.wrong.forEach((w,i)=>{
+        h += `<div class="pq"><div class="t">${i+1}. ${esc(w.q.replace(/<[^>]*>/g,""))}</div>
+          <div class="lbl">내 답</div><div class="lines"></div><div class="lines"></div></div>`;
+      });
+    }else if(QZ.i >= QZ.list.length && QZ.list.length){
+      h += `<div class="pnote">오답이 없어요. 아래 빈 학습지로 한 번 더 연습할 수 있습니다.</div>`;
     }
-    
-    state.animFrameId = requestAnimationFrame(draw);
-};
+  }
 
-/**
- * ==========================================
- * 6. 이벤트 리스너 및 상호작용
- * ==========================================
- */
-
-// 모달 제어 함수
-const showModal = (id) => {
-    document.getElementById(id).style.display = 'flex';
-    // 짧은 지연 후 opacity 적용으로 부드러운 전환
-    setTimeout(() => document.getElementById(id).classList.add('active'), 10);
-};
-
-const hideModal = (modalEl) => {
-    modalEl.classList.remove('active');
-    setTimeout(() => modalEl.style.display = 'none', 300);
-};
-
-const showAlert = (title, msg) => {
-    document.getElementById('alert-title').textContent = title;
-    document.getElementById('alert-msg').textContent = msg;
-    showModal('modal-alert');
-};
-
-document.querySelectorAll('.close-modal').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        hideModal(e.target.closest('.modal-overlay'));
-        playSound('click');
+  if(blank){
+    h += H("확인 문제");
+    QBANK.slice(0, 6).forEach((q,i)=>{
+      h += `<div class="pq"><div class="t">${i+1}. ${esc(q.q.replace(/<[^>]*>/g,""))} <span style="font-size:8.5pt;font-weight:700">${q.std}</span></div>
+        <div class="lbl">내 답</div><div class="lines"></div></div>`;
     });
-});
+  }
 
-// 원소 선택 변경
-selectEl.addEventListener('change', (e) => {
-    state.currentElement = elementsData[e.target.value - 1];
-    if (state.quizMode) {
-        // 퀴즈 모드일 때는 선택된 원소가 정답인지 확인
-        if (state.currentElement.num === state.quizTarget.num) {
-            playSound('bell');
-            showAlert('🎉 정답입니다!', `이 원소는 [${state.quizTarget.name}] 입니다. 원자핵 전하량과 전자 수가 모두 ${state.quizTarget.num}개로 일치합니다.`);
-            // 퀴즈 종료 처리
-            document.getElementById('btn-quiz').click(); 
-        } else {
-            playSound('error');
-            showAlert('❌ 틀렸습니다.', '전자 개수를 다시 한 번 세어보세요. 각 껍질의 전자를 모두 더하면 원자번호와 같습니다.');
-            // 원래 상태로 되돌리기 (UI 상의 select)
-            selectEl.value = 'default';
-        }
-    } else {
-        updateUI();
-        playSound('bell');
-    }
-});
+  if(key){
+    h += H("교사용 정답지");
+    h += `<table><tr><th style="width:52%">문제</th><th>정답</th><th style="width:30%">해설</th></tr>`
+      + QBANK.slice(0, blank ? 6 : QBANK.length).map(q=>
+          `<tr><td>${esc(q.q.replace(/<[^>]*>/g,""))}</td><td>${esc(q.o[q.a])}</td><td>${esc(q.ex.replace(/<[^>]*>/g,""))}</td></tr>`).join("")
+      + `</table>`;
+    h += `<div class="pnote" style="margin-top:3mm"><b>서술형 모범 답안</b></div>`;
+    INQ.forEach((it,i)=>{ h += `<div class="pq"><div class="t">${i+1}. ${esc(it.q)}</div><div class="box">${it.a.replace(/<[^>]*>/g,"")}</div></div>`; });
+  }
 
-// 컨트롤 패널 - 슬라이더
-document.getElementById('speed-slider').addEventListener('input', (e) => {
-    state.speed = parseFloat(e.target.value);
-    document.getElementById('speed-val').textContent = state.speed.toFixed(1) + 'x';
-});
+  h += `<div class="pfoot">🧪 송쌤과학 (Song Ssaem Science)
+ⓒ 2026 송세호 | 아주중학교
+📺 YouTube: @songsamscience  📷 Instagram: @songsamscience
+⚠ 무단 복제·상업적 이용 금지</div>`;
+  $("#printView").innerHTML = h;
+}
+function doPrint(){
+  buildPrint();
+  const nm = `원자의구조_${$("#ckBlank").checked?"학습지":"리포트"}_${(stuLabel()||"학생").replace(/\s+/g,"_")}`;
+  const old = document.title;
+  document.title = nm;
+  closeM("#mRep");
+  setTimeout(()=>{ window.print(); setTimeout(()=>{ document.title = old; }, 400); }, 120);
+}
 
-document.getElementById('scale-slider').addEventListener('input', (e) => {
-    state.scale = parseFloat(e.target.value);
-    document.getElementById('scale-val').textContent = Math.round(state.scale * 100) + '%';
-});
-
-// 컨트롤 패널 - 버튼
-document.getElementById('btn-play').addEventListener('click', (e) => {
-    state.isPlaying = !state.isPlaying;
-    e.target.textContent = state.isPlaying ? '⏸ 일시정지' : '▶ 재생';
-    e.target.style.background = state.isPlaying ? '' : 'rgba(229, 57, 53, 0.4)';
-    playSound('click');
-});
-
-document.getElementById('btn-reset').addEventListener('click', () => {
-    state.currentElement = elementsData[0]; // 수소로 리셋
-    state.speed = 1;
-    state.scale = 1;
-    document.getElementById('speed-slider').value = 1;
-    document.getElementById('speed-val').textContent = '1.0x';
-    document.getElementById('scale-slider').value = 1;
-    document.getElementById('scale-val').textContent = '100%';
-    
-    if (state.quizMode) {
-        document.getElementById('btn-quiz').click(); // 퀴즈 모드 해제
-    } else {
-        updateUI();
-    }
-    playSound('bell');
-});
-
-const soundBtn = document.getElementById('btn-sound');
-soundBtn.addEventListener('click', () => {
-    state.soundEnabled = !state.soundEnabled;
-    soundBtn.textContent = state.soundEnabled ? '🔊 사운드 ON' : '🔇 사운드 OFF';
-    soundBtn.style.borderColor = state.soundEnabled ? 'var(--accent-color)' : '';
-    if(state.soundEnabled) {
-        initAudio();
-        playSound('click');
-    }
-});
-
-document.getElementById('btn-fullscreen').addEventListener('click', () => {
-    const mainEl = document.documentElement;
-    if (!document.fullscreenElement) {
-        mainEl.requestFullscreen().catch(err => {
-            console.log(`Error attempting to enable fullscreen: ${err.message}`);
-        });
-    } else {
-        document.exitFullscreen();
-    }
-    playSound('click');
-});
-
-document.getElementById('btn-capture').addEventListener('click', () => {
-    // 캔버스 배경이 투명하므로 캡처 시 배경색을 추가
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = canvas.width;
-    tempCanvas.height = canvas.height;
-    const tempCtx = tempCanvas.getContext('2d');
-    
-    // 배경색 칠하기
-    tempCtx.fillStyle = '#1a237e'; 
-    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-    // 원본 캔버스 이미지 복사
-    tempCtx.drawImage(canvas, 0, 0);
-
-    const link = document.createElement('a');
-    link.download = `원자구조_${state.currentElement.symbol}.png`;
-    link.href = tempCanvas.toDataURL('image/png');
-    link.click();
-    playSound('click');
-});
-
-document.getElementById('btn-learn').addEventListener('click', () => {
-    showModal('modal-learn');
-    playSound('click');
-});
-
-document.getElementById('btn-history').addEventListener('click', () => {
-    showModal('modal-history');
-    playSound('click');
-});
-
-// 퀴즈 모드 로직
-document.getElementById('btn-quiz').addEventListener('click', (e) => {
-    state.quizMode = !state.quizMode;
-    const btn = e.target;
-    
-    if (state.quizMode) {
-        btn.style.background = 'rgba(229, 57, 53, 0.4)';
-        btn.style.borderColor = '#e53935';
-        btn.innerHTML = '❌ 퀴즈 종료';
-        
-        // 1~20 중 랜덤 원소 선택
-        const randomNum = Math.floor(Math.random() * 20) + 1;
-        state.quizTarget = elementsData[randomNum - 1];
-        
-        // UI 정보 가리기
-        document.getElementById('info-name').textContent = "???";
-        document.getElementById('info-num').textContent = "?";
-        document.getElementById('info-nucleus-charge').textContent = "+?";
-        document.getElementById('info-electron-count').textContent = "-?";
-        document.getElementById('info-config').textContent = "비밀";
-        document.getElementById('desc-n-charge').textContent = "+?";
-        document.getElementById('desc-e-charge').textContent = "-?";
-        
-        // select 초기화 트릭
-        const defaultOption = document.createElement('option');
-        defaultOption.text = "정답 원소를 선택하세요";
-        defaultOption.value = "default";
-        defaultOption.selected = true;
-        defaultOption.disabled = true;
-        selectEl.insertBefore(defaultOption, selectEl.firstChild);
-        
-        showAlert('🎯 퀴즈 모드 시작!', '화면에 표시된 원자는 무엇일까요? 전자의 총 개수를 세어보고, 상단 드롭다운 메뉴에서 정답 원소를 선택해 보세요!');
-    } else {
-        btn.style.background = '';
-        btn.style.borderColor = '';
-        btn.innerHTML = '❓ 퀴즈 모드 (원소 맞추기)';
-        state.quizTarget = null;
-        
-        // select 초기화 트릭 제거
-        if(selectEl.options[0].value === "default") {
-            selectEl.remove(0);
-        }
-        updateUI();
-    }
-    playSound('bell');
-});
-
-// 마우스 좌표 계산 (스케일 및 중심점 이동 고려)
-const getMousePos = (evt) => {
-    const rect = canvas.getBoundingClientRect();
-    const x = evt.clientX - rect.left;
-    const y = evt.clientY - rect.top;
-    
-    // Transform 역산
-    const transformedX = (x - canvasCenterX) / state.scale;
-    const transformedY = (y - canvasCenterY) / state.scale;
-    
-    return { x: transformedX, y: transformedY, rawX: evt.clientX, rawY: evt.clientY };
+/* =====================================================================
+   화면 전환 · 진행 표시 · 안내 문구
+   ===================================================================== */
+const STEPS = ["build","fuse","table","ion","quiz","inq"];
+function markDone(k){
+  if(ST.done[k]) return;
+  ST.done[k] = 1; LS.set("done", ST.done); paintDots();
+}
+function mark(k){ if(k === "build" && ST.p !== 1) markDone("build"); }
+function paintDots(){
+  $("#stepDots").innerHTML = STEPS.map(s=>`<i class="${ST.done[s]?"on":""}" title="${s}"></i>`).join("");
+  $$(".tab").forEach(t=>{
+    const v = t.dataset.v;
+    const ok = v === "build" ? ST.done.build : v === "table" ? ST.done.table : ST.done[v];
+    t.classList.toggle("done", !!ok);
+    if(ok) t.querySelector(".num").textContent = "✓";
+  });
+}
+const GUIDES = {
+  build:()=> ST.fused
+    ? "원자핵을 다시 <b>펼쳐</b> 양성자와 중성자를 세어 볼 수도 있어요."
+    : "세 입자의 수를 바꿔 보고, 왼쪽 아래 <b>원자핵으로 합치기</b>를 눌러 보세요.",
+  table:()=> "칸에 마우스를 올리면 <b>같은 족</b> 원소가 함께 빛납니다. 누르면 그 원자를 만들어 봅니다.",
+  ion:()=> ST.ionD === 0
+    ? "전자를 <b>잃거나 얻어</b> 이온을 만들어 보세요. (↑ ↓ 키로도 됩니다)"
+    : "아래 <b>전기력을 이용한 이온의 이동</b>에서 어느 극으로 가는지 확인해 보세요.",
+  quiz:()=> "한 화면에 한 문제씩 풀고, 틀린 문제는 해설과 함께 리포트에 쌓입니다.",
+  inq:()=> "막히면 💡 <b>힌트</b>를 누르세요. 힌트는 답안을 잠그지 않습니다."
 };
+function guide(){ $("#guide").innerHTML = (GUIDES[ST.view] || (()=>""))(); }
 
-// 캔버스 마우스 이동 (호버 및 툴팁)
-canvas.addEventListener('mousemove', (e) => {
-    const pos = getMousePos(e);
-    let foundElectron = null;
-    let foundShell = null;
+function go(v){
+  ST.view = v;
+  $$(".tab").forEach(t=>t.setAttribute("aria-selected", String(t.dataset.v === v)));
+  $$(".view").forEach(s=>s.classList.toggle("active", s.id === "v-" + v));
+  if(v === "build"){ renderBuild(); requestAnimationFrame(()=>cvBuild.fit()); }
+  if(v === "ion"){ renderIon(); requestAnimationFrame(()=>cvIon.fit()); }
+  if(v === "table"){ markSel(); renderFams(); }
+  if(v === "quiz" && !QZ.list.length) startQuiz();
+  guide();
+}
 
-    // 1. 전자 충돌 검사
-    for (const electron of activeElectrons) {
-        const dx = pos.x - electron.x;
-        const dy = pos.y - electron.y;
-        if (Math.sqrt(dx * dx + dy * dy) <= electron.r + 5) {
-            foundElectron = electron;
-            break;
-        }
+/* ---------- ＋ − 버튼 · 숫자 입력 · ↑ ↓ 를 하나로 묶는다 ---------- */
+function bindStep(rootSel, inSel, onStep, onSet){
+  const root = $(rootSel), inp = $(inSel);
+  let hold = null, rep = null;
+  const stop = ()=>{ clearTimeout(hold); clearInterval(rep); hold = rep = null; };
+  root.querySelectorAll("[data-d]").forEach(b=>{
+    const d = +b.dataset.d;
+    b.addEventListener("pointerdown", ev=>{
+      if(b.disabled) return;
+      ev.preventDefault();
+      onStep(d);
+      hold = setTimeout(()=>{ rep = setInterval(()=>{ if(b.disabled){ stop(); return; } onStep(d); }, 110); }, 420);
+    });
+    ["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t, stop));
+  });
+  ["pointerup","pointercancel"].forEach(t=>window.addEventListener(t, stop));
+  window.addEventListener("blur", stop);
+  inp.addEventListener("input", ()=>{ inp.value = inp.value.replace(/[^0-9]/g,"").slice(0,3); });
+  inp.addEventListener("focus", ()=>inp.select());
+  inp.addEventListener("keydown", ev=>{
+    if(ev.key === "Enter"){ ev.preventDefault(); inp.blur(); }
+    else if(ev.key === "ArrowUp"){ ev.preventDefault(); onStep(1); }
+    else if(ev.key === "ArrowDown"){ ev.preventDefault(); onStep(-1); }
+  });
+  inp.addEventListener("change", ()=>onSet(parseInt(inp.value, 10) || 0));
+  inp.addEventListener("blur", ()=>onSet(parseInt(inp.value, 10) || 0));
+}
+
+/* =====================================================================
+   연결
+   ===================================================================== */
+function wire(){
+  $$(".tab").forEach(t=>t.onclick = ()=>{ sfx.tick(); go(t.dataset.v); });
+
+  /* 입자 3종 */
+  bindStep("#stP", "#inP", d=>setP(ST.p + d), setP);
+  bindStep("#stN", "#inN", d=>setN(ST.n + d), setN);
+  bindStep("#stE", "#inE", d=>setE(ST.e + d), setE);
+
+  $("#btnNeutral").onclick = ()=>{
+    if(ST.e === ST.p){ toast("이미 전기적으로 중성인 원자입니다"); return; }
+    setE(ST.p);
+    toast(`전자를 ${ST.p}개로 맞춰 <b>중성 ${EL(ST.p).kor} 원자</b>로 되돌렸어요`, "ok");
+  };
+  $("#btnRandom").onclick = ()=>{ setP(1 + ((Math.random()*ZMAX)|0)); };
+  $("#btnMission").onclick = ()=>{
+    MI.on = !MI.on;
+    if(MI.on){ MI.task = newTask(); MI.clear = false; toast("조건에 맞게 입자 수를 맞춰 보세요"); }
+    paintMission();
+  };
+
+  /* 원자핵 전환 — 버튼 · 원자핵 클릭 · N 키 */
+  $("#btnFuse").onclick = ()=>setFuse(!ST.fused);
+  [["#cvBuild", ()=>cvBuild], ["#cvIon", ()=>cvIon]].forEach(([sel, get])=>{
+    $(sel).addEventListener("click", ev=>{
+      const c = get(), r = c.cv.getBoundingClientRect();
+      const x = ev.clientX - r.left, y = ev.clientY - r.top;
+      if(Math.hypot(x - c.hitNuc.x, y - c.hitNuc.y) <= c.hitNuc.r + 6) setFuse(!ST.fused);
+    });
+    $(sel).style.cursor = "pointer";
+  });
+
+  /* 보기 설정 */
+  const swBind = (sel, key, cb)=>{
+    $(sel).onclick = ()=>{
+      const on = $(sel).getAttribute("aria-pressed") !== "true";
+      $(sel).setAttribute("aria-pressed", String(on));
+      [cvBuild, cvIon].forEach(c=>c.o[key] = on);
+      if(cb) cb(on);
+    };
+  };
+  swBind("#swSign", "sign"); swBind("#swBig", "big");
+  swBind("#swTrail", "trail"); swBind("#swFast", "fast");
+  $("#btnLbl").onclick = ()=>{
+    const on = !cvBuild.o.labels;
+    [cvBuild, cvIon].forEach(c=>c.o.labels = on);
+    $("#btnLbl").classList.toggle("on", on);
+  };
+  $("#btnPlay").onclick = ()=>setPlay(!cvBuild.o.play);
+  $("#btnShot").onclick = ()=>askStu("shot");
+
+  $("#segUnit").onclick = ev=>{
+    const b = ev.target.closest("button[data-u]"); if(!b) return;
+    ST.unit = b.dataset.u;
+    $$("#segUnit button").forEach(x=>x.setAttribute("aria-pressed", String(x === b)));
+    renderBuild();
+  };
+
+  /* 주기율표 */
+  $("#btnFam1").onclick  = ()=>{ ST.fam = ST.fam === 1 ? 0 : 1;  famHi(ST.fam); renderFams(); };
+  $("#btnFam18").onclick = ()=>{ ST.fam = ST.fam === 18 ? 0 : 18; famHi(ST.fam); renderFams(); };
+
+  /* 이온 */
+  $("#btnLose").onclick = $("#btnLose2").onclick = ()=>stepIon(-1);
+  $("#btnGain").onclick = $("#btnGain2").onclick = ()=>stepIon(1);
+  $("#btnIonReset").onclick = ()=>{ ST.ionD = 0; renderIon(); toast("원래 원자로 되돌렸어요"); };
+  $("#btnAutoIon").onclick = ()=>{
+    const e = EL(ST.ionZ);
+    if(e.ion === null){ toast(`${e.kor}${josa(e.kor,"은/는")} 교과서에서 대표 이온을 다루지 않아요`, "bad"); return; }
+    ST.ionD = e.ion; renderIon(); sfx.ok();
+    toast(`<b>${ionTx(e.sym, e.ion)} ${esc(ionName(e, e.ion))}</b>을 만들었어요`, "ok");
+  };
+  $("#btnMig").onclick = ()=>{ ST.mig = !ST.mig; renderMig(); if(ST.mig){ sfx.tick(); markDone("ion"); } };
+  $("#segMig").onclick = ev=>{
+    const b = ev.target.closest("button[data-m]"); if(!b) return;
+    ST.migExp = b.dataset.m; renderMig();
+  };
+  $("#ionPick").innerHTML = [3,8,9,11,12,13,16,17,19,20,26,29].map(z=>{
+    const e = EL(z);
+    return `<button class="btn sm" data-z="${z}" style="border-color:${e.c}"><b style="color:${e.c}">${e.sym}</b> ${e.kor}</button>`;
+  }).join("");
+  $("#ionPick").onclick = ev=>{
+    const b = ev.target.closest("[data-z]"); if(!b) return;
+    ST.ionZ = +b.dataset.z; ST.ionD = 0; renderIon(); sfx.tick();
+  };
+
+  /* 퀴즈 */
+  $("#qRestart").onclick = ()=>{ startQuiz(); toast("퀴즈를 처음부터 다시 시작합니다"); };
+
+  /* 이론 드로어 */
+  $("#btnTheory").onclick = ()=>openTheory();
+  $("#thClose").onclick = closeTheory;
+  $("#thScrim").onclick = closeTheory;
+  $("#thPrev").onclick = ()=>{ if(TH.i > 0){ TH.i--; renderTheory(); } };
+  $("#thNext").onclick = ()=>{ if(TH.i < THEORY.length-1){ TH.i++; renderTheory(); } };
+
+  /* 모달 공통 */
+  $$("[data-close]").forEach(b=>b.onclick = ()=>closeM("#" + b.closest(".modal-bd").id));
+  $$(".modal-bd").forEach(m=>m.addEventListener("click", ev=>{ if(ev.target === m) closeM("#"+m.id); }));
+  $("#btnHelp").onclick = ()=>openM("#mHelp");
+  $("#btnReport").onclick = openReport;
+  $("#btnSave").onclick = openReport;
+  $("#repPrint").onclick = doPrint;
+  $("#lockYes").onclick = ()=>{ closeM("#mLock"); doLock(); };
+
+  /* 학번·이름 확인 → 저장 진행 */
+  $("#stuGo").onclick = ()=>{
+    STU.grade = $("#sGrade").value.trim(); STU.cls = $("#sCls").value.trim();
+    STU.no = $("#sNo").value.trim();       STU.name = $("#sName").value.trim();
+    if(!STU.name){ $("#sName").focus(); toast("이름을 입력해 주세요", "bad"); return; }
+    LS.set("stu", STU);
+    closeM("#mStu");
+    if(stuNext === "shot"){
+      const cv = (ST.view === "ion" ? cvIon : cvBuild).toPNG("원자의 구조");
+      cv.toBlob(b=>{
+        const u = URL.createObjectURL(b), a = document.createElement("a");
+        a.href = u; a.download = `원자모형_${(stuLabel()||"학생").replace(/\s+/g,"_")}.png`;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(()=>URL.revokeObjectURL(u), 1500);
+      }, "image/png");
+      toast("모형 이미지를 저장했어요. 다운로드 폴더를 확인해 주세요.", "ok");
+    }else{
+      openM("#mRep");
     }
+  };
+  ["#sGrade","#sCls","#sNo","#sName"].forEach((sel,i,arr)=>{
+    $(sel).addEventListener("keydown", ev=>{
+      if(ev.key !== "Enter") return;
+      ev.preventDefault();
+      if(i < arr.length-1) $(arr[i+1]).focus(); else $("#stuGo").click();
+    });
+  });
 
-    // 2. 껍질 호버 검사 (전자에 안 걸렸을 때)
-    if (!foundElectron) {
-        const distToCenter = Math.sqrt(pos.x * pos.x + pos.y * pos.y);
-        for (const electron of activeElectrons) { 
-            // 껍질 두께를 약 15px로 잡고 검사
-            if (Math.abs(distToCenter - electron.shellRadius) < 15) {
-                foundShell = electron.shellName;
-                break;
-            }
-        }
+  /* 테마 */
+  const applyTheme = t=>{
+    document.documentElement.dataset.theme = t;
+    $("#icoTheme").innerHTML = t === "dark"
+      ? '<path d="M20 13.4A8.2 8.2 0 0 1 10.6 4a8.4 8.4 0 1 0 9.4 9.4z"/>'
+      : '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2M12 19.4v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.6 12h2M19.4 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/>';
+    LS.set("theme", t);
+    if(TH.i !== undefined && $("#drawer").classList.contains("open")) renderTheory();  /* 켜 둔 도해를 다시 그린다 */
+  };
+  applyTheme(LS.get("theme", "dark"));
+  $("#btnTheme").onclick = ()=>applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+
+  /* 전체화면 */
+  const fsIco = ()=> $("#icoFs").innerHTML = document.fullscreenElement
+    ? '<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>'
+    : '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>';
+  $("#btnFs").onclick = ()=>{
+    if(document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen()
+      .catch(()=>toast("이 브라우저에서는 전체화면을 지원하지 않습니다", "bad"));
+  };
+  document.addEventListener("fullscreenchange", ()=>{
+    document.body.classList.toggle("fs", !!document.fullscreenElement);
+    fsIco();
+    setTimeout(()=>{ cvBuild.fit(); cvIon.fit(); }, 260);
+  });
+  fsIco();
+
+  /* 소리 — 아이콘 한 번 클릭으로 켜짐/꺼짐, 슬라이더는 2초 뒤 저절로 닫힌다 */
+  let sndT = null, sndBusy = false;
+  const sndHide = ()=>{ clearTimeout(sndT); $("#sndPop").classList.remove("open"); };
+  const sndPeek = ()=>{
+    $("#sndPop").classList.add("open");
+    clearTimeout(sndT);
+    sndT = setTimeout(()=>{ if(!sndBusy) sndHide(); }, 2100);
+  };
+  const wrap = document.querySelector(".snd-wrap");
+  wrap.addEventListener("pointerenter", ()=>{ sndBusy = true; clearTimeout(sndT); });
+  wrap.addEventListener("pointerleave", ()=>{ sndBusy = false; sndT = setTimeout(sndHide, 700); });
+  $("#btnSnd").onclick = ev=>{
+    ev.stopPropagation();
+    SFX.on = !SFX.on;
+    if(SFX.on) sfxInit();
+    LS.set("sfx", {on:SFX.on, vol:SFX.vol});
+    paintSnd(); sndPeek();
+    if(SFX.on) sfx.ok();
+    toast(SFX.on ? "🔊 소리를 켰습니다" : "🔇 소리를 껐습니다");
+  };
+  let volT = 0;
+  $("#rgVol").addEventListener("input", ()=>{
+    SFX.vol = (+$("#rgVol").value)/100;
+    LS.set("sfx", {on:SFX.on, vol:SFX.vol});
+    paintSnd(); sndPeek();
+    const now = Date.now();
+    if(SFX.on && now - volT > 150){ volT = now; sfx.tick(); }
+  });
+  document.addEventListener("click", ev=>{ if(!ev.target.closest(".snd-wrap")) sndHide(); });
+
+  /* 데이터 초기화 */
+  $("#btnWipe").onclick = ()=>{
+    if(!confirm("학번·이름, 서술형 답안과 잠금, 힌트 열람 기록, 퀴즈 기록, 설정이 모두 지워져요. 계속할까요?")) return;
+    ["ans","lock","hint","quiz","stu","done","theme","sfx"].forEach(k=>LS.del(k));
+    location.reload();
+  };
+
+  /* 단축키 — 입력 중에는 모두 무시한다 (§11) */
+  document.addEventListener("keydown", ev=>{
+    if(ev.metaKey || ev.ctrlKey || ev.altKey) return;
+    const t = ev.target;
+    if(t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+    if(ev.key === "Escape"){
+      closeTheory();
+      $$(".modal-bd.open").forEach(m=>m.classList.remove("open"));
+      return;
     }
-
-    state.hoveredElectron = foundElectron;
-    state.hoveredShell = foundShell;
-
-    // 툴팁 및 커서 업데이트
-    if (foundElectron) {
-        canvas.style.cursor = 'pointer';
-        tooltip.style.opacity = '1';
-        tooltip.style.left = e.clientX + 'px';
-        tooltip.style.top = (e.clientY - 10) + 'px';
-        tooltip.textContent = `${foundElectron.shellName}의 전자 (${foundElectron.index})`;
-    } else {
-        tooltip.style.opacity = '0';
-        
-        // 원자핵 호버 검사
-        const el = state.quizTarget || state.currentElement;
-        const nucleusRadius = 20 + (el.num * 0.4);
-        if (Math.sqrt(pos.x * pos.x + pos.y * pos.y) <= nucleusRadius) {
-            canvas.style.cursor = 'pointer';
-        } else {
-            canvas.style.cursor = 'default';
-        }
+    switch(ev.key){
+      case " ": ev.preventDefault(); setPlay(!cvBuild.o.play); break;
+      case "1": go("build"); break;
+      case "2": go("table"); break;
+      case "3": go("ion"); break;
+      case "4": go("quiz"); break;
+      case "5": go("inq"); break;
+      case "ArrowLeft":  if(ST.view === "build"){ ev.preventDefault(); setP(ST.p - 1); } break;
+      case "ArrowRight": if(ST.view === "build"){ ev.preventDefault(); setP(ST.p + 1); } break;
+      case "ArrowUp":
+        ev.preventDefault();
+        if(ST.view === "ion") stepIon(-1); else if(ST.view === "build") setE(ST.e - 1);
+        break;
+      case "ArrowDown":
+        ev.preventDefault();
+        if(ST.view === "ion") stepIon(1); else if(ST.view === "build") setE(ST.e + 1);
+        break;
+      case "n": case "N": case "ㅜ": setFuse(!ST.fused); break;
+      case "t": case "T": case "ㅅ": openTheory(); break;
+      case "r": case "R": case "ㄱ": openReport(); break;
+      case "h": case "H": case "ㅗ": openM("#mHelp"); break;
+      case "d": case "D": case "ㅇ": $("#btnTheme").click(); break;
+      case "f": case "F": case "ㄹ": $("#btnFs").click(); break;
     }
-});
+  });
+}
+function setPlay(on){
+  [cvBuild, cvIon].forEach(c=>c.o.play = on);
+  $("#btnPlay").classList.toggle("on", on);
+  $("#icoPlay").innerHTML = on
+    ? '<rect x="7" y="5" width="3.4" height="14" rx="1.1" fill="currentColor" stroke="none"/><rect x="13.6" y="5" width="3.4" height="14" rx="1.1" fill="currentColor" stroke="none"/>'
+    : '<path d="M8 5.4 18.4 12 8 18.6z" fill="currentColor" stroke="currentColor" stroke-linejoin="round"/>';
+  $("#btnPlay").title = on ? "전자 움직임 정지 (Space)" : "전자 움직임 재생 (Space)";
+}
 
-// 캔버스 클릭 이벤트
-canvas.addEventListener('click', (e) => {
-    const pos = getMousePos(e);
-    const el = state.quizTarget || state.currentElement;
-    
-    // 전자 클릭
-    if (state.hoveredElectron) {
-        playSound('pop');
-        return; 
-    }
+/* =====================================================================
+   시작
+   ===================================================================== */
+function init(){
+  Object.assign(STU, LS.get("stu", STU));
+  const s = LS.get("sfx", null);
+  if(s){ SFX.on = !!s.on; SFX.vol = typeof s.vol === "number" ? s.vol : .6; }
+  ST.done = LS.get("done", {});
+  const q = LS.get("quiz", null);
 
-    // 원자핵 클릭
-    const nucleusRadius = 20 + (el.num * 0.4);
-    if (Math.sqrt(pos.x * pos.x + pos.y * pos.y) <= nucleusRadius) {
-        playSound('click');
-        const chargeStr = state.quizMode ? "+?" : `+${el.num}`;
-        showAlert('🔴 원자핵 (Nucleus)', `원자의 중심에 있으며 (${chargeStr}) 전하를 띱니다.\n양성자와 중성자로 이루어져 있어 원자 질량의 대부분을 차지합니다.`);
-    }
-});
+  cvBuild = new AtomCanvas($("#cvBuild"));
+  cvIon   = new AtomCanvas($("#cvIon"));
+  buildTable();
+  renderFams();
+  renderInq();
+  renderTheory();
+  wire();
+  paintSnd();
+  paintDots();
+  setPlay(true);
+  renderBuild();
+  renderIon();
+  startQuiz();
+  go("build");
 
-// 툴팁이 캔버스 밖으로 나가면 숨기기
-canvas.addEventListener('mouseleave', () => {
-    tooltip.style.opacity = '0';
-    state.hoveredElectron = null;
-    state.hoveredShell = null;
-});
+  const had = Object.keys(ANS).length || Object.keys(ST.done).length;
+  if(had) setTimeout(()=>toast("지난 기록을 불러왔어요"), 700);
 
-/**
- * ==========================================
- * 7. 초기화 및 실행
- * ==========================================
- */
-window.onload = () => {
-    resizeCanvas();
-    updateUI();
-    state.animFrameId = requestAnimationFrame(draw);
-};
-
+  window.addEventListener("resize", ()=>{ cvBuild.fit(); cvIon.fit(); });
+}
+if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+else init();
 </script>
 </body>
 </html>
