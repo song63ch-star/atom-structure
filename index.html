@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>송쌤과학 가상실험실 | 원자의 구조</title>
 <meta name="description" content="양성자·중성자·전자를 직접 조절해 원자를 만들고, 원자핵으로 합쳐 보고, 주기율표 1~30번과 이온까지 다루는 중학교 2학년 가상실험실 [9과11-02~04]">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300..900&family=Noto+Sans+KR:wght@300..900&family=Noto+Sans+Mono:wght@400..700&display=swap">
 <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="27" cy="30" r="11" fill="%23e2483b"/><circle cx="38" cy="35" r="9" fill="%238fa6b8"/><circle cx="52" cy="14" r="6" fill="%233fa9f5"/></svg>'>
 <style>
 /* =====================================================================
@@ -35,17 +38,27 @@
 
   --sp1:4px; --sp2:8px; --sp3:12px; --sp4:16px; --sp5:20px; --sp6:24px; --sp7:32px; --sp8:40px;
   --r1:8px; --r2:12px; --r3:18px; --r4:999px;
-  --sh1:0 1px 2px rgba(0,0,0,.34);
-  --sh2:0 6px 18px rgba(0,0,0,.40);
-  --sh3:0 18px 48px rgba(0,0,0,.52);
+  --sh1:0 1px 2px rgba(0,0,0,.26);
+  --sh2:0 8px 26px rgba(0,0,0,.34);
+  --sh3:0 26px 68px rgba(0,0,0,.46);
+  --hl:inset 0 1px 0 rgba(255,255,255,.05);   /* 면 윗변 1px 빛 */
   --t-fast:.16s; --t-mid:.25s; --t-slow:.4s;
   --spring:cubic-bezier(.34,1.56,.64,1);
   --focus:rgba(63,169,245,.55);
 
   --h-header:56px; --h-tabs:42px; --h-bar:46px;
   --tap:44px;
-  --font:"Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
-  --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+  /* 타이포 3역할 — 라틴은 Noto Sans, 한글은 Noto Sans KR 이 글자마다 이어받는다
+     본문 Noto Sans / 제목 Noto Sans (굵기·자간으로 역할 분리) / 수치 Noto Sans Mono */
+  --font:"Noto Sans","Noto Sans KR","Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --font-dp:"Noto Sans","Noto Sans KR","Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:"Noto Sans Mono","Noto Sans KR",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+
+  /* 자간 스케일 — 노토는 프리텐다드보다 폭이 넓어 큰 글자일수록 더 조인다 */
+  --tr-dp:-.028em;   /* 큰 제목  */
+  --tr-ti:-.018em;   /* 소제목   */
+  --tr-bd:-.005em;   /* 본문     */
+  --tr-lb:.015em;    /* 작은 라벨 */
 
   --c-metal:#c9713f; --c-meta:#6e8f7b; --c-non:#3d7ea6; --c-noble:#7a6bb0;
 }
@@ -56,9 +69,10 @@ html[data-theme="light"]{
   --p-soft:#fdeceb; --n-soft:#eef2f6; --e-soft:#e8f3fe;
   --gold-soft:#fdf3dc; --brand-soft:#e7f1fa;
   --ok-soft:#e4f6ee; --warn-soft:#fdf4e0; --bad-soft:#fdeceb;
-  --sh1:0 1px 2px rgba(18,37,58,.07);
-  --sh2:0 6px 18px rgba(18,37,58,.10);
-  --sh3:0 18px 48px rgba(18,37,58,.16);
+  --sh1:0 1px 2px rgba(18,37,58,.06);
+  --sh2:0 8px 26px rgba(18,37,58,.09);
+  --sh3:0 26px 68px rgba(18,37,58,.14);
+  --hl:inset 0 1px 0 rgba(255,255,255,.85);
   --focus:rgba(15,111,184,.45);
 }
 
@@ -66,7 +80,10 @@ html[data-theme="light"]{
 html,body{height:100%}
 body{
   margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);
-  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  font-size:15px;line-height:1.6;letter-spacing:var(--tr-bd);
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;font-optical-sizing:auto;
+  font-variant-numeric:tabular-nums;word-break:keep-all;
   overscroll-behavior:none;overflow:hidden;
 }
 button,input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
@@ -405,27 +422,69 @@ html[data-theme="light"] .calc .r.e .nv{color:var(--e-hi)}
 @media (max-width:700px){ .foot-mini{display:none} }
 
 /* ===================== 주기율표 1~30 ===================== */
-.pt-wrap{padding:var(--sp4);display:flex;flex-direction:column;gap:var(--sp3);min-height:0;overflow:auto;overscroll-behavior:contain}
-.ptable{
-  display:grid;grid-template-columns:26px repeat(18,minmax(0,1fr));gap:5px;
-  min-width:760px;align-content:start;
+.pt-wrap{
+  padding:var(--sp3) var(--sp4);display:flex;flex-direction:column;gap:var(--sp2);
+  min-height:0;min-width:0;overflow:hidden;
 }
-.pt-ax{display:grid;place-items:center;font-size:10.5px;font-weight:900;color:var(--ink-3)}
-.pt-ax.top{align-items:end;padding-bottom:3px}
+.pt-head{display:flex;align-items:center;gap:7px;flex:0 0 auto;flex-wrap:wrap}
+.pt-head .tt{font-size:12.5px;font-weight:900;letter-spacing:-.02em}
+.pt-head .tt b{color:var(--e-lo)}
+html[data-theme="light"] .pt-head .tt b{color:var(--brand)}
+
+/* 1족(알칼리 금속) — 주기율표 — 17·18족(할로젠·비활성 기체) 3단 배치
+   주기율표가 있는 쪽과 같은 자리에 카드를 두어, 표를 보며 성질을 견주게 한다 */
+.pt-3{
+  --pt-side:clamp(178px, 14.5vw, 258px);
+  flex:1 1 auto;min-height:0;min-width:0;display:grid;gap:var(--sp3);
+  grid-template-columns:minmax(0,var(--pt-side)) minmax(0,1fr) minmax(0,var(--pt-side));
+}
+@media (max-width:1320px){ .pt-3{gap:var(--sp2)} }
+.pt-col{
+  display:flex;flex-direction:column;gap:var(--sp2);
+  justify-content:center;justify-content:safe center;   /* 넘칠 때는 위부터 (safe) */
+  min-height:0;min-width:0;overflow:auto;overscroll-behavior:contain;
+}
+.pt-col::-webkit-scrollbar{width:6px}
+.pt-col::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:99px}
+.pt-mid{
+  display:flex;flex-direction:column;justify-content:center;gap:var(--sp2);
+  min-height:0;min-width:0;container-type:size;
+}
+.pt-board{flex:0 0 auto;min-width:0;display:grid;place-items:center}
+
+.ptable{
+  --g:4px; --ax:18px; --c:34px;
+  display:grid;
+  grid-template-columns:var(--ax) repeat(18, var(--c));
+  grid-template-rows:var(--ax) repeat(4, var(--c));
+  gap:var(--g);
+}
+/* 가로·세로 중 좁은 쪽에 맞춰 칸 크기를 정해, 스크롤 없이 한 화면에 담는다 */
+@supports (width:1cqw){
+  .ptable{ --c:min(84px,
+                   (100cqw - var(--ax) - 18*var(--g)) / 18,
+                   (100cqh - 92px - var(--ax) - 4*var(--g)) / 4); }
+}
+.pt-ax{display:grid;place-items:center;font-size:10px;font-weight:900;color:var(--ink-3)}
+.pt-ax.top{align-items:end;padding-bottom:2px}
 .pt-cell{
-  position:relative;aspect-ratio:1/1;border-radius:var(--r1);overflow:hidden;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;
-  color:#fff;border:1.5px solid transparent;transition:transform var(--t-fast),box-shadow var(--t-fast),border-color var(--t-fast);
+  position:relative;border-radius:var(--r1);overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.04;
+  color:#fff;border:1.5px solid transparent;padding:0 1px;
+  transition:transform var(--t-fast),box-shadow var(--t-fast),border-color var(--t-fast);
 }
 .pt-cell::after{
   content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(158deg, rgba(255,255,255,.24) 0%, rgba(255,255,255,0) 46%, rgba(0,0,0,.20) 100%);
 }
-.pt-cell .z{font-size:clamp(8px,.92vw,12px);font-weight:800;opacity:.9;font-variant-numeric:tabular-nums}
+.pt-cell .z{font-size:clamp(6.5px,calc(var(--c)*.225),13px);font-weight:800;opacity:.9;font-variant-numeric:tabular-nums}
 /* 1~30번 — 수업에서 실제로 다루는 구간이므로 기호를 크게 (요청) */
-.pt-cell .sy{font-size:clamp(17px,2.5vw,34px);font-weight:900;letter-spacing:-.05em;text-shadow:0 2px 5px rgba(0,0,0,.35)}
-.pt-cell .kn{font-size:clamp(8px,.95vw,12px);font-weight:800;opacity:.95;white-space:nowrap}
-.pt-cell:hover{transform:translateY(-3px) scale(1.05);z-index:6;box-shadow:var(--sh2);border-color:rgba(255,255,255,.7)}
+.pt-cell .sy{font-size:clamp(11px,calc(var(--c)*.5),32px);font-weight:900;letter-spacing:-.05em;text-shadow:0 2px 5px rgba(0,0,0,.35)}
+.pt-cell .kn{
+  font-size:clamp(6px,calc(var(--c)*.21),13px);font-weight:800;opacity:.95;
+  white-space:nowrap;max-width:100%;overflow:hidden;letter-spacing:-.05em;
+}
+.pt-cell:hover{transform:translateY(-3px) scale(1.06);z-index:6;box-shadow:var(--sh2);border-color:rgba(255,255,255,.7)}
 .pt-cell:active{transform:scale(1.01)}
 .pt-cell.sel{border-color:#fff;box-shadow:0 0 0 3px var(--bg), 0 0 0 5px var(--gold);z-index:5}
 .pt-cell.fam{box-shadow:inset 0 0 0 3px var(--gold)}
@@ -433,27 +492,72 @@ html[data-theme="light"] .calc .r.e .nv{color:var(--e-hi)}
 .pt-cell.sp{background:none!important;pointer-events:none}
 .pt-cell.more{
   background:none!important;border:1.5px dashed var(--line-2);color:var(--ink-3);
-  font-size:11px;font-weight:800;pointer-events:none;
+  font-size:clamp(7px,calc(var(--c)*.28),12px);font-weight:800;pointer-events:none;
 }
-.pt-legend{display:flex;flex-wrap:wrap;gap:6px}
-.lg{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:var(--ink-2);
-  padding:4px 10px;border-radius:var(--r4);background:var(--panel-2);border:1px solid var(--line)}
-.lg i{width:11px;height:11px;border-radius:3px}
+.pt-legend{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;flex:0 0 auto}
+.lg{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:800;color:var(--ink-2);
+  padding:3px 9px;border-radius:var(--r4);background:var(--panel-2);border:1px solid var(--line)}
+.lg i{width:10px;height:10px;border-radius:3px;flex:0 0 auto}
+.pt-mid .note{flex:0 0 auto;padding:7px 10px;font-size:11px;line-height:1.5}
+
+/* 좁은 화면 — 3단을 풀고 세로로 쌓되, 표는 가로로만 넘긴다 */
+@media (max-width:1000px){
+  .pt-wrap{overflow:auto;overscroll-behavior:contain}
+  .pt-3{display:flex;flex-direction:column;gap:var(--sp3)}
+  .pt-3 > *{flex:0 0 auto}
+  .pt-col{overflow:visible;justify-content:flex-start}
+  .pt-mid{order:-1;justify-content:flex-start;container-type:normal}
+  .pt-board{display:block;overflow-x:auto;overscroll-behavior-x:contain;padding-bottom:4px}
+  .ptable{--c:38px;width:max-content;margin:0 auto}
+}
 
 /* 같은 족 원소의 성질 — 교과서 146~147쪽 탐구 [9과11-03] */
-.fam-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:var(--sp3)}
-.fam-card{border:1px solid var(--line);border-radius:var(--r2);overflow:hidden;background:var(--panel-2)}
-.fam-card .h{display:flex;align-items:center;gap:7px;padding:9px 12px;color:#fff;font-size:12.5px;font-weight:900}
+.fam-card{
+  border:1px solid var(--line);border-radius:var(--r2);overflow:hidden;background:var(--panel-2);
+  flex:0 0 auto;width:100%;text-align:left;display:block;
+  transition:border-color var(--t-fast),box-shadow var(--t-fast),transform var(--t-fast);
+}
+.fam-card:hover{border-color:var(--line-2);transform:translateY(-1px)}
+.fam-card.on{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-soft)}
+.fam-card .h{display:flex;align-items:center;gap:5px;padding:8px 11px;color:#fff;font-size:12px;font-weight:900;flex-wrap:wrap}
 .fam-card.g1 .h{background:linear-gradient(100deg,#c9713f,#9d4f24)}
+.fam-card.g2 .h{background:linear-gradient(100deg,#d3a04b,#a06f22)}
 .fam-card.g17 .h{background:linear-gradient(100deg,#5b9c46,#3a6d2b)}
 .fam-card.g18 .h{background:linear-gradient(100deg,#7a6bb0,#4f4287)}
-.fam-card .h .sy{margin-left:auto;font-size:11px;font-weight:800;opacity:.94;letter-spacing:.02em}
-.fam-card .b{padding:9px 12px}
-.fam-card .l{display:flex;gap:9px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:11.5px;font-weight:700;line-height:1.5}
+.fam-card .h .sub{font-weight:800;opacity:.88;font-size:11px}
+.fam-card .h .sy{margin-left:auto;font-size:10.5px;font-weight:800;opacity:.94;letter-spacing:.02em}
+.fam-card .b{padding:6px 11px 8px}
+.fam-card .l{padding:5px 0;border-bottom:1px dashed var(--line)}
 .fam-card .l:last-child{border-bottom:0}
-.fam-card .l .k{flex:0 0 64px;color:var(--ink-3);font-weight:900}
-.fam-card .l .v{color:var(--ink-2);min-width:0}
+.fam-card .l .k{display:block;font-size:10px;font-weight:900;color:var(--ink-3);margin-bottom:1px;letter-spacing:-.01em}
+.fam-card .l .v{display:block;font-size:11.5px;font-weight:700;line-height:1.5;color:var(--ink-2)}
 .fam-card .l .v b{color:var(--ink)}
+
+/* ===================== 원소 팝업 — 주기율표에서 누른 원소의 구조 ===================== */
+.el-grid{display:grid;grid-template-columns:minmax(0,1fr) 238px;gap:var(--sp3);align-items:start}
+@media (max-width:660px){ .el-grid{grid-template-columns:minmax(0,1fr)} }
+.el-stage{
+  position:relative;height:min(46dvh,330px);min-height:230px;border-radius:var(--r2);overflow:hidden;
+  border:1px solid var(--line);
+  background:radial-gradient(120% 90% at 50% 42%, rgba(63,169,245,.10) 0%, rgba(11,20,32,0) 62%),
+             linear-gradient(180deg, var(--bg-2), var(--bg));
+}
+html[data-theme="light"] .el-stage{
+  background:radial-gradient(120% 90% at 50% 42%, rgba(63,169,245,.14) 0%, rgba(255,255,255,0) 62%),
+             linear-gradient(180deg,#f7fafd,#e9f0f7);
+}
+.el-stage canvas{display:block;width:100%;height:100%}
+.el-chip{
+  position:relative;width:44px;height:44px;border-radius:12px;flex:0 0 auto;overflow:hidden;
+  display:grid;place-items:center;color:#fff;box-shadow:var(--sh2);
+}
+.el-chip .z{position:absolute;top:3px;left:6px;font-size:10px;font-weight:800;opacity:.9}
+.el-chip .sy{font-size:19px;font-weight:900;letter-spacing:-.05em}
+.el-tt{min-width:0;flex:1 1 auto;line-height:1.35}
+.el-tt .nm{display:block;font-size:16px;font-weight:900;letter-spacing:-.03em}
+.el-tt .sub{display:block;font-size:11.5px;font-weight:700;color:var(--ink-3)}
+.el-sec{font-size:11px;font-weight:900;color:var(--ink-3);margin:11px 0 4px}
+.el-sec:first-child{margin-top:0}
 
 /* ===================== 탐구 질문 (§9) ===================== */
 .inq-wrap{padding:var(--sp4);overflow:auto;overscroll-behavior:contain;min-height:0}
@@ -669,6 +773,128 @@ html[data-theme="light"] .hist-i .nm{color:var(--e-hi)}
 
 /* ===================== 인쇄 (§10) ===================== */
 #printView{display:none}
+
+/* =====================================================================
+   타이포 정제 — 노토 산스 메트릭에 맞춘 마무리 층
+   프리텐다드보다 글자 폭이 넓고 900이 훨씬 두껍다. 그래서
+     ① 큰 글자는 굵기를 한 단계 내리고 자간을 더 조여 또렷하게
+     ② 작은 라벨은 자간을 살짝 벌려 뭉치지 않게
+     ③ 수치는 등폭(Noto Sans Mono)으로 갈아 자릿수가 흔들리지 않게
+   ===================================================================== */
+
+/* ① 제목 — 900은 노토에서 너무 검다. 800으로 낮추고 자간을 조인다 */
+.brand-tx b,
+.stage-name .t,
+.blk-h h3,
+.modal-h h2,
+.drawer-h h2,
+.qcard .qq,
+.el-tt .nm,
+.pt-head .tt,
+.th-card h3,
+.inq-q .tx{
+  font-family:var(--font-dp);
+  font-weight:800;
+  letter-spacing:var(--tr-ti);
+}
+.qcard .qq,
+.el-tt .nm,
+.stage-name .t,
+.modal-h h2,
+.drawer-h h2{ letter-spacing:var(--tr-dp) }
+
+/* 탭 — 선택된 탭만 굵게 두어 위계를 만든다 */
+.tab{font-weight:700;letter-spacing:var(--tr-ti)}
+.tab[aria-selected="true"]{font-weight:800}
+
+/* ② 작은 라벨 — 10~11px 구간은 자간을 벌려야 노토가 뭉치지 않는다 */
+.brand-tx small,
+.foot-mini,
+.blk-h .hint,
+.kv .k,
+.el-sec,
+.lg,
+.pt-ax,
+.fam-card .l .k,
+.fam-card .h .sub,
+.hist-i .ds,
+.snd-lb,
+.step .fld u,
+.calc .r .lb{ letter-spacing:var(--tr-lb) }
+
+.el-sec,
+.fam-card .l .k,
+.pt-ax{ font-weight:700;text-transform:none }
+
+/* 교육과정 성취기준 배지 — 라틴·숫자만이라 등폭이 더 정연하다 */
+.std,.blk-h .std,.inq-q .std{ font-family:var(--mono);font-weight:600;letter-spacing:.02em }
+
+/* ③ 수치 — 등폭으로 자릿수가 바뀌어도 흔들리지 않는다 */
+.step .fld input,
+.calc .r .nv,
+.kv .v,
+.bdg b,
+.tab .num,
+.score-pill,
+.inq-top .cnt,
+.inq-meta .cc,
+.drawer-pg,
+.snd-val,
+.pt-cell .z,
+.el-chip .z{
+  font-family:var(--mono);
+  font-variant-numeric:tabular-nums;
+}
+/* 한글이 섞이는 값은 굵기를 한 단계 낮춰 라틴·한글 무게를 맞춘다 */
+.kv .v,.calc .r .nv{font-weight:700}
+.step .fld input{font-weight:700;letter-spacing:-.02em}
+.bdg b,.tab .num,.score-pill,.inq-top .cnt,.drawer-pg{font-weight:700}
+
+/* 원소 기호 — 라틴 전용. 노토의 넓은 폭을 자간으로 잡아 준다 */
+.pt-cell .sy,.el-chip .sy,.fam-card .h .sy{font-family:var(--font-dp);letter-spacing:-.035em}
+.pt-cell .kn{font-weight:700;letter-spacing:-.02em}
+
+/* 본문 — 노토는 한글 줄바꿈이 잦아 낱말 단위로 끊는다 */
+.note,.hint,.panel-hint,.panel-ans,.verdict,.fam-card .l .v,.hitem .tx,.th-card p{
+  letter-spacing:var(--tr-bd);word-break:keep-all;
+}
+
+/* 버튼 — 굵기를 700으로 낮춰 라벨이 번지지 않게 */
+.btn{font-weight:700;letter-spacing:var(--tr-ti)}
+.btn.pri,.btn.save{font-weight:800}
+.opt{font-weight:700;letter-spacing:var(--tr-bd)}
+
+/* 초점 표시 — 얇고 또렷하게 */
+:focus-visible{outline-width:2.5px;outline-offset:2px}
+
+
+/* =====================================================================
+   표면 정제 — 색(팔레트)은 그대로 두고 빛과 선만 다듬는다
+   ===================================================================== */
+
+/* 면 윗변에 1px 빛 — 어두운 화면에서 카드가 판판해 보이지 않게 */
+.blk,.qcard,.inq,.hist-i,.el-stage,.seg,.calc,.fam-card,.btn,.lg{ box-shadow:var(--hl) }
+.bdg{ box-shadow:var(--hl),var(--sh1) }   /* 원래 있던 그림자를 지우지 않는다 */
+.btn:hover{ box-shadow:var(--hl),var(--sh1) }
+.btn.pri,.btn.save{ box-shadow:inset 0 1px 0 rgba(255,255,255,.16) }
+.fam-card.on{ box-shadow:var(--hl),0 0 0 2px var(--gold-soft) }
+
+/* 블록 머리 — 아주 옅은 띠로 본문과 층을 나눈다 */
+.blk-h{ background:linear-gradient(180deg, color-mix(in srgb,var(--panel) 55%, transparent), transparent) }
+
+/* 안쪽 점선 구분선은 한 단계 눌러 글자가 앞으로 오게 */
+.kv,.sw-row,.fam-card .l{ border-bottom-color:color-mix(in srgb,var(--line) 72%, transparent) }
+
+/* 탭 — 선택 탭에만 옅은 깊이를 준다 */
+.tab[aria-selected="true"]{ box-shadow:0 2px 10px color-mix(in srgb,var(--brand) 34%, transparent) }
+
+/* 주기율표 칸 — 윗변 빛을 얹어 타일이 도드라지게 */
+.pt-cell[data-z]{ box-shadow:inset 0 1px 0 rgba(255,255,255,.13) }
+.pt-cell[data-z]:hover{ box-shadow:inset 0 1px 0 rgba(255,255,255,.2),var(--sh2) }
+.pt-cell.fam{ box-shadow:inset 0 0 0 3px var(--gold) }
+.pt-cell.sel{ box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--gold) }
+.pt-cell.fam.sel{ box-shadow:inset 0 0 0 3px var(--gold),0 0 0 3px var(--bg),0 0 0 5px var(--gold) }
+
 @media print{
   @page{size:A4 portrait;margin:14mm 12mm}
   html,body{height:auto!important;overflow:visible!important;background:#fff!important;color:#000!important}
@@ -925,22 +1151,34 @@ html[data-theme="light"] .hist-i .nm{color:var(--e-hi)}
 <!-- ─────────── 2. 주기율표 1~30 ─────────── -->
 <section class="view" id="v-table" role="tabpanel" aria-label="주기율표">
   <div class="pt-wrap">
-    <div class="btn-row" style="align-items:center">
-      <span style="font-size:12.5px;font-weight:900;letter-spacing:-.02em">원소를 누르면 그 원자를 바로 만들어 봅니다</span>
+    <div class="pt-head">
+      <span class="tt">원소를 누르면 그 원자의 <b>구조</b>가 팝업으로 열립니다</span>
       <span class="std" style="font-size:9.5px;font-weight:900;color:var(--brand);background:var(--brand-soft);padding:3px 7px;border-radius:8px">9과11-03</span>
       <span style="margin-left:auto"></span>
-      <button class="btn sm" id="btnFam1">1족 원소 비교</button>
-      <button class="btn sm" id="btnFam18">18족 원소 비교</button>
+      <button class="btn sm" id="btnFam1">1족 강조</button>
+      <button class="btn sm" id="btnFam2">2족 강조</button>
+      <button class="btn sm" id="btnFam17">17족 강조</button>
+      <button class="btn sm" id="btnFam18">18족 강조</button>
     </div>
-    <div style="overflow-x:auto;overscroll-behavior-x:contain;padding-bottom:4px">
-      <div class="ptable" id="ptable"></div>
+
+    <div class="pt-3">
+      <!-- 왼쪽 — 주기율표 맨 왼쪽 줄인 1족 -->
+      <div class="pt-col" id="famL"></div>
+
+      <!-- 가운데 — 주기율표 -->
+      <div class="pt-mid">
+        <div class="pt-board"><div class="ptable" id="ptable"></div></div>
+        <div class="pt-legend" id="ptLegend"></div>
+        <div class="note">
+          가로줄 7개를 <b>주기</b>, 세로줄 18개를 <b>족</b>이라고 합니다. 원소는 <b>양성자 수(원자 번호)</b> 순서로 배치되고,
+          <b>같은 족</b>에는 성질이 비슷한 원소가 모여 있습니다. 그래서 성질을 모르는 원소라도
+          <b>같은 족에 속한 다른 원소의 성질</b>을 알면 그 원소의 성질을 예측할 수 있습니다. <b>[9과11-03]</b>
+        </div>
+      </div>
+
+      <!-- 오른쪽 — 주기율표 맨 오른쪽 두 줄인 17·18족 -->
+      <div class="pt-col" id="famR"></div>
     </div>
-    <div class="pt-legend" id="ptLegend"></div>
-    <div class="note">
-      가로줄 7개를 <b>주기</b>, 세로줄 18개를 <b>족</b>이라고 합니다. 원소는 <b>양성자 수(원자 번호)</b> 순서로 배치되고,
-      <b>같은 족</b>에는 성질이 비슷한 원소가 모여 있습니다. 칸에 마우스를 올리면 같은 족 원소가 함께 빛납니다.
-    </div>
-    <div class="fam-grid" id="famGrid"></div>
   </div>
 </section>
 
@@ -1074,6 +1312,29 @@ html[data-theme="light"] .hist-i .nm{color:var(--e-hi)}
 </aside>
 
 <!-- ═══════════ 도움말 ═══════════ -->
+<!-- ═══════════ 원소 구조 팝업 — 주기율표에서 누른 원소 ═══════════ -->
+<div class="modal-bd" id="mEl">
+  <div class="modal" style="max-width:760px">
+    <div class="modal-h">
+      <span class="el-chip" id="elChip"></span>
+      <span class="el-tt"><span class="nm" id="elName">—</span><span class="sub" id="elSub"></span></span>
+      <button class="btn sm" data-close aria-label="원소 팝업 닫기">닫기 ✕</button>
+    </div>
+    <div class="modal-b">
+      <div class="el-grid">
+        <div class="el-stage" id="elStage"><canvas id="cvEl"></canvas></div>
+        <div class="el-info" id="elInfo"></div>
+      </div>
+    </div>
+    <div class="modal-f" style="justify-content:flex-start">
+      <button class="btn sm" id="elPrev" aria-label="이전 원소">‹ 이전</button>
+      <button class="btn sm" id="elNext" aria-label="다음 원소">다음 ›</button>
+      <span style="flex:1 1 auto"></span>
+      <button class="btn pri" id="elBuild">이 원자 만들러 가기 →</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bd" id="mHelp">
   <div class="modal">
     <div class="modal-h"><h2>사용 방법</h2><button class="btn sm" data-close>닫기 ✕</button></div>
@@ -1081,7 +1342,7 @@ html[data-theme="light"] .hist-i .nm{color:var(--e-hi)}
       <div class="hlist">
         <div class="hitem"><div class="no">1</div><div class="tx"><b>원자 만들기</b> — <b>양성자·중성자·전자</b> 세 칸의 ＋ − 를 눌러 수를 바꾸면 화면 가운데 원자가 바로 다시 만들어집니다. 숫자를 직접 써 넣어도 되고, 칸을 누른 뒤 <b>↑ ↓</b> 로도 조절됩니다.</div></div>
         <div class="hitem"><div class="no">2</div><div class="tx"><b>원자핵으로 합치기</b> — 무대 왼쪽 아래 버튼(또는 <b>N</b>)을 누르면 낱낱의 양성자·중성자가 가운데로 모여 <b>하나의 원자핵</b>이 되고, 원자핵의 전하 <b>+양성자 수</b>가 나타납니다. 원자핵을 직접 눌러도 됩니다.</div></div>
-        <div class="hitem"><div class="no">3</div><div class="tx"><b>주기율표 1~30</b> — 원소 기호를 크게 보여 줍니다. 칸에 마우스를 올리면 <b>같은 족</b> 원소가 함께 빛나고, 누르면 그 원자를 바로 만들어 봅니다.</div></div>
+        <div class="hitem"><div class="no">3</div><div class="tx"><b>주기율표 1~30</b> — 표 전체가 한 화면에 들어옵니다. 왼쪽에 <b>1족(알칼리 금속)·2족(알칼리 토금속)</b>, 오른쪽에 <b>17족(할로젠)·18족(비활성 기체)</b> 카드를 두어 성질을 나란히 견줄 수 있습니다. 칸에 마우스를 올리면 <b>같은 족</b> 원소가 함께 빛나고, 누르면 그 원자의 <b>구조 팝업</b>이 열립니다.</div></div>
         <div class="hitem"><div class="no">4</div><div class="tx"><b>이온 만들기</b> — 전자를 잃거나 얻으면 이온식과 이름이 자동으로 만들어집니다. <b>전기력을 이용한 이온의 이동</b>은 교과서 탐구(황산 구리(Ⅱ)·과망가니즈산 칼륨)를 그대로 재현합니다.</div></div>
         <div class="hitem"><div class="no">5</div><div class="tx"><b>탐구 질문</b> — 질문을 누르면 답을 쓰는 칸이 열립니다. 자동 저장되고, <b>20자 이상</b> 쓰면 모범 답안을 열 수 있습니다. <b>모범 답안을 본 문항은 답안을 더 고칠 수 없습니다</b> 🔒. <b>힌트는 답안을 잠그지 않아</b> 언제든 열어 보고 이어서 고쳐 쓸 수 있어요.</div></div>
         <div class="hitem"><div class="no">6</div><div class="tx"><b>학습 리포트</b> — 오른쪽 위 📄 (또는 <b>R</b>). 학번·이름을 확인한 뒤 서술형 답안·모범 답안 비교, 퀴즈 오답 노트, <b>빈 학습지</b>를 인쇄하거나 PDF로 저장합니다. 인쇄 창에서 <b>대상</b>을 ‘PDF로 저장’으로 고르세요.</div></div>
@@ -1634,7 +1895,7 @@ class AtomCanvas{
         this.fuse = this.fuseTo > this.fuse ? Math.min(this.fuseTo, this.fuse+sp) : Math.max(this.fuseTo, this.fuse-sp);
       }
       if(this.ring >= 0){ this.ring += dt/.62; if(this.ring > 1) this.ring = -1; }
-      try{ this.draw(); }catch(err){ /* 한 프레임이 실패해도 실험은 계속된다 */ }
+      try{ if(!this.gate || this.gate()) this.draw(); }catch(err){ /* 한 프레임이 실패해도 실험은 계속된다 */ }
       this.raf = requestAnimationFrame(loop);
     };
     this.raf = requestAnimationFrame(loop);
@@ -1946,11 +2207,8 @@ function buildTable(){
 
   box.addEventListener("click", ev=>{
     const c = ev.target.closest(".pt-cell[data-z]"); if(!c) return;
-    const z = +c.dataset.z;
-    ST.p = z; ST.n = EL(z).n; ST.e = z;
     sfx.ok(); markDone("table");
-    go("build"); renderBuild();
-    toast(`<b>${EL(z).kor}(${EL(z).sym})</b> 원자를 만들었어요 — 양성자 ${z}개`, "ok");
+    openEl(+c.dataset.z);                    /* 구조를 팝업으로 먼저 보여 준다 */
   });
   box.addEventListener("pointerover", ev=>{
     const c = ev.target.closest(".pt-cell[data-z]");
@@ -1972,6 +2230,11 @@ const FAMS = {
       ["물과의 반응","물과 <b>격렬하게 반응</b>합니다"],
       ["안정성","다른 원소와 <b>잘 반응</b>합니다"],
       ["그 밖","은백색 광택이 있고, 칼로 자를 수 있을 만큼 무릅니다"]]},
+  2:{ nm:"2족 원소", sub:"알칼리 토금속", syms:"Be · Mg · Ca", zs:[4,12,20], cls:"g2", rows:[
+      ["실온 상태","<b>고체</b>로 존재합니다"],
+      ["물과의 반응","1족 금속보다 <b>천천히 반응</b>합니다 (칼슘은 찬물과도 반응)"],
+      ["안정성","다른 원소와 <b>잘 반응</b>하지만 1족만큼 격렬하지는 않습니다"],
+      ["그 밖","은백색 광택이 있고, 1족 금속보다 <b>단단</b>합니다"]]},
  17:{ nm:"17족 원소", sub:"할로젠", syms:"F · Cl", zs:[9,17], cls:"g17", rows:[
       ["실온 상태","<b>기체</b>로 존재합니다 (플루오린·염소)"],
       ["색","연노랑·황록색 등 <b>색을 띱니다</b>"],
@@ -1983,19 +2246,65 @@ const FAMS = {
       ["안정성","다른 원소와 <b>거의 반응하지 않습니다</b>"],
       ["그 밖","네온은 간판에, 헬륨은 비행선에 이용됩니다"]]}
 };
-function renderFams(){
-  const keys = ST.fam === 1 ? [1,18] : ST.fam === 18 ? [18,1] : ST.fam === 17 ? [17,1] : [1,18];
-  $("#famGrid").innerHTML = keys.map(k=>{
-    const f = FAMS[k];
-    return `<div class="fam-card ${f.cls}">
-      <div class="h">${f.nm}<span style="font-weight:800;opacity:.86">· ${f.sub}</span><span class="sy">${f.syms}</span></div>
-      <div class="b">${f.rows.map(r=>`<div class="l"><span class="k">${r[0]}</span><span class="v">${r[1]}</span></div>`).join("")}</div>
-    </div>`;
-  }).join("") + `<div class="note" style="grid-column:1/-1">
-      성질이 비슷한 원소가 <b>같은 족</b>에 오도록 배치했기 때문에, 성질을 모르는 원소라도
-      <b>같은 족에 속한 다른 원소의 성질</b>을 알면 그 원소의 성질을 예측할 수 있습니다. <b>[9과11-03]</b>
-    </div>`;
+/* 1족은 주기율표 왼쪽 끝, 17·18족은 오른쪽 끝 — 표에서의 자리와 같은 쪽에 카드를 둔다 */
+function famCard(k){
+  const f = FAMS[k];
+  return `<button type="button" class="fam-card ${f.cls}${ST.fam === k ? " on" : ""}" data-fam="${k}"
+            aria-pressed="${ST.fam === k}" title="주기율표에서 ${f.nm} 강조하기">
+    <span class="h">${f.nm}<span class="sub">· ${f.sub}</span><span class="sy">${f.syms}</span></span>
+    <span class="b">${f.rows.map(r=>`<span class="l"><span class="k">${r[0]}</span><span class="v">${r[1]}</span></span>`).join("")}</span>
+  </button>`;
 }
+function renderFams(){
+  $("#famL").innerHTML = famCard(1)  + famCard(2);
+  $("#famR").innerHTML = famCard(17) + famCard(18);
+  $$(".fam-card[data-fam]").forEach(c=>{
+    c.onclick = ()=>{ const k = +c.dataset.fam; ST.fam = ST.fam === k ? 0 : k; famHi(ST.fam); renderFams(); };
+  });
+}
+
+/* =====================================================================
+   원소 구조 팝업 — 주기율표에서 누른 원소를 그 자리에서 살펴본다
+   ===================================================================== */
+let cvEl = null, elZ = 1;
+function openEl(z){
+  elZ = clamp(z|0, 1, ZMAX);
+  const e = EL(elZ), sh = e.sh.slice();
+
+  $("#elChip").style.background = e.c;
+  $("#elChip").innerHTML = `<span class="z">${e.z}</span><span class="sy">${e.sym}</span>`;
+  $("#elName").textContent = e.kor;
+  $("#elSub").textContent  = `${e.eng} · ${CAT[e.cat].n} · ${e.g}족 ${e.pr}주기`;
+
+  $("#elInfo").innerHTML = `
+    <div class="el-sec">원자를 이루는 입자</div>
+    <div class="kv"><span class="k">양성자 수 (= 원자 번호)</span><span class="v" style="color:var(--p-lo)">${e.z}</span></div>
+    <div class="kv"><span class="k">중성자 수</span><span class="v" style="color:var(--n-lo)">${e.n}</span></div>
+    <div class="kv"><span class="k">전자 수</span><span class="v" style="color:var(--e-lo)">${e.z}</span></div>
+    <div class="kv"><span class="k">질량수 (양성자+중성자)</span><span class="v">${e.z + e.n}</span></div>
+    <div class="kv"><span class="k">전하</span><span class="v">0 (중성)</span></div>
+    <div class="el-sec">전자 껍질 배치 — ${sh.join(" ")}</div>
+    ${shellBar(sh)}
+    <div class="kv" style="margin-top:6px"><span class="k">가장 바깥 껍질 전자</span><span class="v">${sh[sh.length-1]}개 (${SHELL(sh.length-1)} 껍질)</span></div>
+    ${e.ion !== null
+      ? `<div class="kv"><span class="k">대표 이온</span><span class="v">${ionTx(e.sym, e.ion)}</span></div>`
+      : `<div class="kv"><span class="k">대표 이온</span><span class="v" style="color:var(--ink-3)">교과서에서 다루지 않음</span></div>`}
+    <div class="note" style="margin-top:9px">
+      원자의 종류는 <b>원자핵의 양성자 수</b>로 정해집니다. 양성자가 <b>${e.z}개</b>이므로 이 원자는
+      <b>${esc(e.kor)}(${e.sym})</b>이고, 양성자 수와 전자 수가 같아 <b>전기적으로 중성</b>입니다.
+    </div>`;
+
+  openM("#mEl");
+  if(!cvEl){
+    cvEl = new AtomCanvas($("#cvEl"));
+    cvEl.o.labels = true;
+    cvEl.gate = ()=> $("#mEl").classList.contains("open");   /* 닫혀 있으면 그리지 않는다 */
+  }
+  cvEl.set({p:e.z, n:e.n, e:e.z, sh, sym:e.sym});
+  cvEl.setFuse(false); cvEl.fuse = 0;
+  cvEl.fit(); cvEl.start();
+}
+function stepEl(d){ openEl(clamp(elZ + d, 1, ZMAX)); }
 
 /* =====================================================================
    3. 이온 만들기 [9과11-04]
@@ -2235,7 +2544,7 @@ const INQ = [
      따라서 둘을 더하면 <span class="hi">0</span>이 되어 원자는 전기적으로 중성입니다.`},
  {id:"q4", std:"[9과11-03]",
   q:"주기율표에서 리튬(Li)·나트륨(Na)·칼륨(K)이 같은 세로줄에 놓여 있다. 이렇게 배치하면 어떤 점이 좋은지 설명해 보자.",
-  hint:"‘주기율표 1~30’ 탭에서 Li 칸에 마우스를 올려 <b>함께 빛나는 원소</b>를 확인하고, 아래 <b>1족 원소</b> 카드의 성질을 견주어 보세요.",
+  hint:"‘주기율표 1~30’ 탭에서 Li 칸에 마우스를 올려 <b>함께 빛나는 원소</b>를 확인하고, 왼쪽 <b>1족 원소</b> 카드의 성질을 견주어 보세요.",
   a:`세 원소는 모두 <span class="hi">1족</span>이고 물과 격렬하게 반응하는 등 <span class="hi">성질이 비슷</span>합니다.
      과학자들은 비슷한 성질을 가진 원소가 <span class="hi">같은 족</span>에 오도록 주기율표를 만들었습니다.
      그래서 성질을 모르는 원소라도 <span class="hi">같은 족의 다른 원소의 성질을 알면 그 원소의 성질을 예측</span>할 수 있습니다.`},
@@ -2451,7 +2760,7 @@ const THEORY = [
   def:"비슷한 성질을 가진 원소가 같은 족에 오도록 배치했습니다.",
   tx:`<b>1족 원소</b>는 물과 격렬하게 반응하고, <b>18족 원소</b>는 안정하여 다른 원소와 거의 반응하지 않습니다.
       그래서 성질을 모르는 원소라도 <b>같은 족에 속한 다른 원소의 성질</b>을 알면 그 원소의 성질을 예측할 수 있습니다.`,
-  link:"‘주기율표 1~30’ 탭 아래의 <b>1족 · 18족 원소 카드</b>에서 성질을 나란히 견주어 보세요."},
+  link:"‘주기율표 1~30’ 탭 <b>양옆의 족 카드</b>(왼쪽 1·2족 · 오른쪽 17·18족)에서 성질을 나란히 견주어 보세요."},
 
  {t:"이온 — 전자를 잃거나 얻은 입자",
   fig:`<svg viewBox="0 0 320 170">
@@ -2663,7 +2972,7 @@ const GUIDES = {
   build:()=> ST.fused
     ? "원자핵을 다시 <b>펼쳐</b> 양성자와 중성자를 세어 볼 수도 있어요."
     : "세 입자의 수를 바꿔 보고, 왼쪽 아래 <b>원자핵으로 합치기</b>를 눌러 보세요.",
-  table:()=> "칸에 마우스를 올리면 <b>같은 족</b> 원소가 함께 빛납니다. 누르면 그 원자를 만들어 봅니다.",
+  table:()=> "칸에 마우스를 올리면 <b>같은 족</b> 원소가 함께 빛납니다. 누르면 그 원자의 <b>구조 팝업</b>이 열려요. (← → 키로 이웃 원소)",
   ion:()=> ST.ionD === 0
     ? "전자를 <b>잃거나 얻어</b> 이온을 만들어 보세요. (↑ ↓ 키로도 됩니다)"
     : "아래 <b>전기력을 이용한 이온의 이동</b>에서 어느 극으로 가는지 확인해 보세요.",
@@ -2772,8 +3081,19 @@ function wire(){
   };
 
   /* 주기율표 */
-  $("#btnFam1").onclick  = ()=>{ ST.fam = ST.fam === 1 ? 0 : 1;  famHi(ST.fam); renderFams(); };
-  $("#btnFam18").onclick = ()=>{ ST.fam = ST.fam === 18 ? 0 : 18; famHi(ST.fam); renderFams(); };
+  const famBtn = (sel, k)=>{ $(sel).onclick = ()=>{ ST.fam = ST.fam === k ? 0 : k; famHi(ST.fam); renderFams(); }; };
+  famBtn("#btnFam1", 1); famBtn("#btnFam2", 2); famBtn("#btnFam17", 17); famBtn("#btnFam18", 18);
+
+  /* 원소 구조 팝업 */
+  $("#elPrev").onclick  = ()=>stepEl(-1);
+  $("#elNext").onclick  = ()=>stepEl(1);
+  $("#elBuild").onclick = ()=>{
+    const z = elZ;
+    ST.p = z; ST.n = EL(z).n; ST.e = z;
+    closeM("#mEl"); sfx.ok();
+    go("build"); renderBuild();
+    toast(`<b>${EL(z).kor}(${EL(z).sym})</b> 원자를 만들었어요 — 양성자 ${z}개`, "ok");
+  };
 
   /* 이온 */
   $("#btnLose").onclick = $("#btnLose2").onclick = ()=>stepIon(-1);
@@ -2928,8 +3248,14 @@ function wire(){
       case "3": go("ion"); break;
       case "4": go("quiz"); break;
       case "5": go("inq"); break;
-      case "ArrowLeft":  if(ST.view === "build"){ ev.preventDefault(); setP(ST.p - 1); } break;
-      case "ArrowRight": if(ST.view === "build"){ ev.preventDefault(); setP(ST.p + 1); } break;
+      case "ArrowLeft":
+        ev.preventDefault();
+        if($("#mEl").classList.contains("open")) stepEl(-1); else if(ST.view === "build") setP(ST.p - 1);
+        break;
+      case "ArrowRight":
+        ev.preventDefault();
+        if($("#mEl").classList.contains("open")) stepEl(1); else if(ST.view === "build") setP(ST.p + 1);
+        break;
       case "ArrowUp":
         ev.preventDefault();
         if(ST.view === "ion") stepIon(-1); else if(ST.view === "build") setE(ST.e - 1);
