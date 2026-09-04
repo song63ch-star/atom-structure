@@ -603,6 +603,19 @@ html[data-theme="light"] .el-stage{
 .panel-hint .ttl{font-size:11.5px;font-weight:900;margin-bottom:4px}
 .panel-hint .free{display:block;margin-top:5px;font-size:10.5px;font-weight:800;opacity:.85}
 
+/* 모범 답안을 보고 다시 쓰기 — 처음 답안은 잠긴 채로 두고, 새 칸에 다시 정리한다 (§9) */
+.panel-rev{margin-top:9px;padding:10px 12px;border-radius:var(--r2);background:var(--brand-soft);
+  border:1px solid color-mix(in srgb,var(--brand) 40%,transparent)}
+.panel-rev .ttl{font-size:11.5px;font-weight:900;color:var(--brand);margin-bottom:4px}
+.panel-rev .sub{font-size:10.5px;font-weight:800;color:var(--ink-3);line-height:1.6;margin-bottom:7px}
+.panel-rev textarea{width:100%;min-height:88px;resize:vertical;padding:10px 12px;border-radius:var(--r2);
+  border:1.5px solid var(--line);background:var(--panel);color:var(--ink);
+  font-size:13px;font-weight:600;line-height:1.7;outline:none}
+.panel-rev textarea:focus{border-color:var(--brand)}
+.panel-rev .rc{display:block;margin-top:6px;font-size:11px;font-weight:800;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.panel-rev .rc.ok{color:var(--brand)}
+.tagx.rev{background:var(--brand-soft);color:var(--brand)}
+
 /* ===================== 퀴즈 ===================== */
 .quiz-wrap{padding:var(--sp4);overflow:auto;overscroll-behavior:contain;min-height:0;display:flex;flex-direction:column;gap:var(--sp3)}
 .qhead{display:flex;align-items:center;gap:var(--sp3);flex-wrap:wrap}
@@ -744,8 +757,8 @@ html[data-theme="light"] .hist-i .nm{color:var(--e-hi)}
 .sns-pill .bd svg{width:15px;height:15px}
 
 /* 학번·이름 확인 팝업 */
-.stu-grid{display:grid;grid-template-columns:repeat(3,1fr) 1.6fr;gap:7px}
-@media (max-width:520px){ .stu-grid{grid-template-columns:repeat(3,1fr)} .stu-grid label:last-child{grid-column:1/-1} }
+.stu-grid{display:grid;grid-template-columns:1fr 1.3fr;gap:var(--sp2)}
+@media (max-width:520px){ .stu-grid{grid-template-columns:minmax(0,1fr)} }
 .stu-grid label{display:flex;flex-direction:column;gap:3px}
 .stu-grid span{font-size:10.5px;font-weight:900;color:var(--ink-3)}
 .stu-grid input{
@@ -909,6 +922,7 @@ html[data-theme="light"] .hist-i .nm{color:var(--e-hi)}
   #printView .pq .lbl{font-size:8.5pt;font-weight:900;margin:2mm 0 1mm}
   #printView .pq .box{border:.6pt solid #999;border-radius:1.5mm;padding:2mm;font-size:10pt;line-height:1.7;min-height:12mm;white-space:pre-wrap}
   #printView .pq .tags{font-size:8pt;color:#333}
+  #printView .pq .box.rev{border-width:1pt;border-style:dashed}
   #printView .lines{border-bottom:.6pt solid #666;height:7mm}
   #printView table{width:100%;border-collapse:collapse;font-size:9.5pt}
   #printView th,#printView td{border:.6pt solid #666;padding:1.6mm 2mm;text-align:left}
@@ -1344,8 +1358,8 @@ html[data-theme="light"] .hist-i .nm{color:var(--e-hi)}
         <div class="hitem"><div class="no">2</div><div class="tx"><b>원자핵으로 합치기</b> — 무대 왼쪽 아래 버튼(또는 <b>N</b>)을 누르면 낱낱의 양성자·중성자가 가운데로 모여 <b>하나의 원자핵</b>이 되고, 원자핵의 전하 <b>+양성자 수</b>가 나타납니다. 원자핵을 직접 눌러도 됩니다.</div></div>
         <div class="hitem"><div class="no">3</div><div class="tx"><b>주기율표 1~30</b> — 표 전체가 한 화면에 들어옵니다. 왼쪽에 <b>1족(알칼리 금속)·2족(알칼리 토금속)</b>, 오른쪽에 <b>17족(할로젠)·18족(비활성 기체)</b> 카드를 두어 성질을 나란히 견줄 수 있습니다. 칸에 마우스를 올리면 <b>같은 족</b> 원소가 함께 빛나고, 누르면 그 원자의 <b>구조 팝업</b>이 열립니다.</div></div>
         <div class="hitem"><div class="no">4</div><div class="tx"><b>이온 만들기</b> — 전자를 잃거나 얻으면 이온식과 이름이 자동으로 만들어집니다. <b>전기력을 이용한 이온의 이동</b>은 교과서 탐구(황산 구리(Ⅱ)·과망가니즈산 칼륨)를 그대로 재현합니다.</div></div>
-        <div class="hitem"><div class="no">5</div><div class="tx"><b>탐구 질문</b> — 질문을 누르면 답을 쓰는 칸이 열립니다. 자동 저장되고, <b>20자 이상</b> 쓰면 모범 답안을 열 수 있습니다. <b>모범 답안을 본 문항은 답안을 더 고칠 수 없습니다</b> 🔒. <b>힌트는 답안을 잠그지 않아</b> 언제든 열어 보고 이어서 고쳐 쓸 수 있어요.</div></div>
-        <div class="hitem"><div class="no">6</div><div class="tx"><b>학습 리포트</b> — 오른쪽 위 📄 (또는 <b>R</b>). 학번·이름을 확인한 뒤 서술형 답안·모범 답안 비교, 퀴즈 오답 노트, <b>빈 학습지</b>를 인쇄하거나 PDF로 저장합니다. 인쇄 창에서 <b>대상</b>을 ‘PDF로 저장’으로 고르세요.</div></div>
+        <div class="hitem"><div class="no">5</div><div class="tx"><b>탐구 질문</b> — 질문을 누르면 답을 쓰는 칸이 열립니다. 자동 저장되고, <b>20자 이상</b> 쓰면 모범 답안을 열 수 있습니다. <b>모범 답안을 본 문항은 처음 답안을 더 고칠 수 없지만</b> 🔒, 그 아래 <b>‘다시 쓰기’ 칸</b>이 열려 모범 답안과 견주어 새로 정리해 볼 수 있습니다 ✏️. <b>힌트는 답안을 잠그지 않아</b> 언제든 열어 보고 이어서 고쳐 쓸 수 있어요.</div></div>
+        <div class="hitem"><div class="no">6</div><div class="tx"><b>학습 리포트</b> — 오른쪽 위 📄 (또는 <b>R</b>). 학번·이름을 확인한 뒤 서술형 답안·모범 답안·다시 쓴 답안 비교, 퀴즈 오답 노트, <b>빈 학습지</b>를 인쇄하거나 PDF로 저장합니다. 인쇄 창에서 <b>대상</b>을 ‘PDF로 저장’으로 고르세요.</div></div>
         <div class="hitem"><div class="no">7</div><div class="tx"><b>소리</b> — 오른쪽 위 스피커를 <b>한 번 누르면 바로 켜지고 꺼집니다</b>. 소리 크기 막대가 잠깐 떴다가 저절로 닫혀요. 기본은 꺼짐입니다.</div></div>
       </div>
       <div class="keys">
@@ -1392,9 +1406,7 @@ html[data-theme="light"] .hist-i .nm{color:var(--e-hi)}
         저장하는 산출물의 <b>첫 장과 파일 이름</b>에 학번·이름·날짜가 함께 인쇄됩니다.
       </p>
       <div class="stu-grid">
-        <label><span>학년</span><input id="sGrade" inputmode="numeric" maxlength="2" placeholder="2" autocomplete="off"></label>
-        <label><span>반</span><input id="sCls" inputmode="numeric" maxlength="3" placeholder="4" autocomplete="off"></label>
-        <label><span>번호</span><input id="sNo" inputmode="numeric" maxlength="3" placeholder="12" autocomplete="off"></label>
+        <label><span>학번</span><input id="sSid" inputmode="numeric" maxlength="8" placeholder="30412" autocomplete="off"></label>
         <label><span>이름</span><input id="sName" maxlength="20" placeholder="홍길동" autocomplete="off"></label>
       </div>
       <div class="note" style="margin-top:12px">🔒 입력한 정보는 <b>이 컴퓨터에만</b> 저장되고 서버로 보내지 않습니다.</div>
@@ -1439,8 +1451,9 @@ html[data-theme="light"] .hist-i .nm{color:var(--e-hi)}
       <div style="font-size:34px;margin-bottom:8px">🔒</div>
       <h2 style="font-size:16px;font-weight:900;letter-spacing:-.03em;margin-bottom:9px">모범 답안을 볼까요?</h2>
       <p style="font-size:12.5px;font-weight:700;color:var(--ink-2);line-height:1.75">
-        모범 답안을 보면 이 문항의 <b>내 답안은 더 이상 고칠 수 없어요.</b><br>
-        지금까지 쓴 답안은 그대로 저장되어 리포트에 인쇄됩니다.
+        모범 답안을 보면 지금까지 쓴 <b>이 문항의 답안은 더 이상 고칠 수 없어요.</b><br>
+        대신 모범 답안 아래에 <b>‘다시 쓰기’ 칸</b>이 열려요.
+        처음 답안과 다시 쓴 답안이 <b>모두 리포트에 함께 인쇄</b>됩니다.
       </p>
     </div>
     <div class="modal-f" style="justify-content:center">
@@ -1943,13 +1956,10 @@ const ST = {
   fam:0,                   /* 주기율표에서 강조할 족 */
   done:{}                  /* 단계별 완료 표시 */
 };
-const STU = { grade:"", cls:"", no:"", name:"" };
+const STU = { sid:"", name:"" };            /* 학번 · 이름 (§10) */
 let cvBuild = null, cvIon = null, stuNext = null;
 
-function stuLabel(){
-  const id = [STU.grade, STU.cls, STU.no].every(v=>v) ? `${STU.grade}${String(STU.cls).padStart(2,"0")}${String(STU.no).padStart(2,"0")}` : "";
-  return [id, STU.name].filter(Boolean).join(" ");
-}
+function stuLabel(){ return [STU.sid, STU.name].filter(Boolean).join(" "); }
 function todayKo(){ const d = new Date(); return `${d.getFullYear()}. ${d.getMonth()+1}. ${d.getDate()}.`; }
 
 /* =====================================================================
@@ -2526,42 +2536,47 @@ function paintWrong(){
 const INQ = [
  {id:"q1", std:"[9과11-02]",
   q:"원자를 이루는 입자 세 가지를 쓰고, 각 입자가 어떤 전하를 띠는지 함께 설명해 보자.",
-  hint:"‘원자 만들기’ 화면 왼쪽 위의 <b>세 배지</b>와 오른쪽 <b>입자 수 조절</b> 칸의 색·기호(＋, −)를 보고 옮겨 적어 보세요.",
-  a:`원자는 <span class="hi">양성자, 중성자, 전자</span>로 이루어져 있습니다. 원자의 중심에는 <span class="hi">원자핵</span>이 있고,
-     원자핵은 <span class="hi">(+)전하를 띠는 양성자</span>와 <span class="hi">전하를 띠지 않는 중성자</span>가 결합해 이루어집니다.
-     원자핵 주위를 움직이는 <span class="hi">전자는 (−)전하</span>를 띱니다.`},
+  hint:"‘원자 만들기’ 화면에서 <b>입자 수 조절</b> 칸의 세 이름(양성자·중성자·전자)을 먼저 찾고, 모형 속 각 입자에 <b>＋ 기호가 있는지, − 기호가 있는지, 아무 기호도 없는지</b>를 확인해 그대로 옮겨 적어 보세요.",
+  a:`원자는 <span class="hi">양성자, 중성자, 전자</span> 세 가지 입자로 이루어져 있습니다.
+     원자의 중심에는 <span class="hi">원자핵</span>이 있고, 원자핵은 <span class="hi">(+)전하를 띠는 양성자</span>와
+     <span class="hi">전하를 띠지 않는 중성자</span>로 이루어집니다.
+     원자핵 주위에는 <span class="hi">(−)전하를 띠는 전자</span>가 움직이고 있습니다.`},
  {id:"q2", std:"[9과11-02]",
   q:"양성자 수를 바꾸면 원소의 종류가 달라지는데, 중성자 수를 바꾸면 달라지지 않는다. 그 까닭을 설명해 보자.",
   hint:"양성자 칸의 ＋ − 를 눌러 보고 오른쪽 <b>‘이 원자는 무엇일까?’</b> 카드가 어떻게 바뀌는지 본 다음, 중성자 칸으로 같은 일을 해 보세요.",
-  a:`원자의 종류는 <span class="hi">원자핵의 양성자 수</span>로 정해지기 때문입니다.
-     양성자 수를 그대로 <span class="hi">원자 번호</span>로 쓰고, 원자 번호가 달라지면 다른 원소가 됩니다.
-     중성자는 전하를 띠지 않고 원소를 구별하는 기준도 아니므로, 중성자 수가 달라져도 원소의 종류는 그대로입니다.`},
+  a:`원소의 종류는 <span class="hi">원자핵 속 양성자 수</span>로만 정해지기 때문입니다.
+     양성자 수를 그대로 <span class="hi">원자 번호</span>로 쓰므로, 양성자 수가 달라지면 원자 번호도 달라져 다른 원소가 됩니다.
+     반면 <span class="hi">같은 원소라도 중성자 수는 서로 다를 수 있어</span>(예: 중성자 수가 다른 탄소), 중성자 수는 원소를 구별하는 기준이 되지 못합니다.`},
  {id:"q3", std:"[9과11-02]",
   q:"원자가 전기적으로 중성인 까닭을 총전하량을 이용해 설명해 보자.",
-  hint:"오른쪽 <b>총전하량 계산</b> 칸에서 양성자 줄과 전자 줄의 값을 더했을 때 <b>합계가 0</b>이 되는 과정을 문장으로 옮겨 보세요.",
+  hint:"오른쪽 <b>총전하량 계산</b> 칸에서 <b>양성자 총전하량</b>과 <b>전자 총전하량</b>을 각각 읽고, 두 값을 더한 <b>총전하량 합계가 0</b>이 되는 과정을 문장으로 옮겨 보세요. 양성자 수를 바꾸면 합계가 어떻게 달라지는지도 확인하면 좋아요.",
   a:`한 원자를 이루는 <span class="hi">양성자 수와 전자 수가 같기</span> 때문입니다.
      양성자 총전하량은 (+1)×양성자 수, 전자 총전하량은 (−1)×전자 수이므로 두 값의 크기는 같고 부호만 반대입니다.
      따라서 둘을 더하면 <span class="hi">0</span>이 되어 원자는 전기적으로 중성입니다.`},
  {id:"q4", std:"[9과11-03]",
   q:"주기율표에서 리튬(Li)·나트륨(Na)·칼륨(K)이 같은 세로줄에 놓여 있다. 이렇게 배치하면 어떤 점이 좋은지 설명해 보자.",
   hint:"‘주기율표 1~30’ 탭에서 Li 칸에 마우스를 올려 <b>함께 빛나는 원소</b>를 확인하고, 왼쪽 <b>1족 원소</b> 카드의 성질을 견주어 보세요.",
-  a:`세 원소는 모두 <span class="hi">1족</span>이고 물과 격렬하게 반응하는 등 <span class="hi">성질이 비슷</span>합니다.
-     과학자들은 비슷한 성질을 가진 원소가 <span class="hi">같은 족</span>에 오도록 주기율표를 만들었습니다.
-     그래서 성질을 모르는 원소라도 <span class="hi">같은 족의 다른 원소의 성질을 알면 그 원소의 성질을 예측</span>할 수 있습니다.`},
+  a:`세 원소는 모두 <span class="hi">1족</span>으로, 무른 금속이고 물과 격렬하게 반응하는 등 <span class="hi">성질이 비슷</span>합니다.
+     과학자들은 원소를 원자 번호 순으로 늘어놓되 <span class="hi">성질이 비슷한 원소가 같은 세로줄(족)에 오도록</span> 주기율표를 만들었습니다.
+     그래서 <span class="hi">족만 알아도 그 원소의 성질을 짐작</span>할 수 있고, 아직 성질을 모르는 원소도 같은 족 원소를 통해 예측할 수 있습니다.`},
  {id:"q5", std:"[9과11-04]",
   q:"나트륨 원자(Na)가 나트륨 이온(Na⁺)이 되는 과정을 전자의 이동으로 설명해 보자.",
   hint:"‘이온 만들기’ 탭에서 <b>− 전자 잃기</b>를 한 번 누르고, 배지의 <b>양성자 수·전자 수·전하</b>가 각각 어떻게 바뀌는지 확인해 보세요.",
-  a:`나트륨 원자는 양성자 11개, 전자 11개로 전기적으로 중성입니다.
-     여기서 <span class="hi">전자 1개를 잃으면</span> 전자는 10개가 되고 양성자 수는 11개 그대로입니다.
-     그러면 <span class="hi">(+)전하의 양이 상대적으로 많아져</span> +1의 전하를 띤 <span class="hi">양이온 Na⁺</span>가 됩니다.`}
+  a:`나트륨 원자는 양성자 11개, 전자 11개로 두 수가 같아 전기적으로 중성입니다.
+     여기서 <span class="hi">전자 1개를 잃으면</span> 전자는 10개가 되고, 양성자 수는 11개 그대로입니다.
+     그러면 <span class="hi">양성자가 전자보다 1개 많아져</span> 총전하량이 +1이 되고, +1의 전하를 띤 <span class="hi">양이온 Na⁺</span>가 됩니다.`}
 ];
 const ANS = LS.get("ans", {}), LOCK = LS.get("lock", {}), HINT = LS.get("hint", {});
+/* REV — 모범 답안을 본 뒤 다시 쓴 답안. 처음 답안(ANS)은 잠긴 채 그대로 남는다 (§9) */
+const REV = LS.get("rev", {});
 const ANS_MIN = 20;
-let lockTarget = null, saveT = null;
+let lockTarget = null, saveT = null, revT = null;
 
 function inqDone(id){ return ((ANS[id]||"").trim().length >= 5); }
 function inqReady(id){ return ((ANS[id]||"").trim().length >= ANS_MIN); }
 function saveAns(){ clearTimeout(saveT); saveT = setTimeout(()=>LS.set("ans", ANS), 250); }
+function saveRev(){ clearTimeout(revT); revT = setTimeout(()=>LS.set("rev", REV), 250); }
+const revDone = id => ((REV[id]||"").trim().length >= 5);
 
 function renderInq(){
   $("#inqList").innerHTML = INQ.map((it,i)=>{
@@ -2578,7 +2593,8 @@ function renderInq(){
         <div class="inq-meta">
           <span class="cc${val.trim().length>=ANS_MIN?" ok":""}">${val.trim().length}자${val.trim().length<ANS_MIN?` · ${ANS_MIN}자 이상 쓰면 모범 답안을 열 수 있어요`:""}</span>
           ${HINT[it.id] ? '<span class="tagx hint">💡 힌트 봄</span>' : ""}
-          ${locked ? '<span class="tagx lock">🔒 모범 답안 열람 · 수정 잠김</span>' : done ? '<span class="tagx done">작성함</span>' : ""}
+          ${locked ? '<span class="tagx lock">🔒 처음 답안 잠김</span>' : done ? '<span class="tagx done">작성함</span>' : ""}
+          ${revDone(it.id) ? '<span class="tagx rev">✏️ 다시 씀</span>' : ""}
           <button class="btn sm" data-act="hint">💡 힌트 보기</button>
           <button class="btn sm" data-act="ans"${(!inqReady(it.id) && !locked) ? " disabled" : ""}>📖 모범 답안 보기</button>
         </div>
@@ -2633,11 +2649,39 @@ function renderInq(){
 }
 function showAns(card, it){
   const slot = card.querySelector(".slot");
-  if(slot.querySelector(".panel-ans")) return;
+  if(!slot.querySelector(".panel-ans")){
+    const d = document.createElement("div");
+    d.className = "panel-ans";
+    d.innerHTML = `<div class="ttl">📖 모범 답안 · 이렇게 쓰면 좋아요</div>${it.a}`;
+    slot.appendChild(d);
+  }
+  showRev(card, it);
+}
+/* 모범 답안을 본 뒤 다시 쓰는 칸 — 처음 답안은 잠긴 채로 두고, 여기에 새로 정리한다 (§9) */
+function showRev(card, it){
+  const slot = card.querySelector(".slot");
+  if(slot.querySelector(".panel-rev")) return;
+  const id = it.id, val = REV[id] || "";
   const d = document.createElement("div");
-  d.className = "panel-ans";
-  d.innerHTML = `<div class="ttl">📖 모범 답안 · 이렇게 쓰면 좋아요</div>${it.a}`;
+  d.className = "panel-rev";
+  d.innerHTML = `<div class="ttl">✏️ 모범 답안을 보고 다시 쓰기</div>
+    <div class="sub">처음 쓴 답안은 그대로 남습니다. 모범 답안과 견주어 빠뜨린 내용을 채워, 아래에 <b>내 문장으로 다시</b> 정리해 보세요.</div>
+    <textarea placeholder="모범 답안에서 새로 알게 된 내용을 넣어 다시 써 보세요." aria-label="${esc(it.q)} 다시 쓴 답안">${esc(val)}</textarea>
+    <span class="rc${val.trim().length>=ANS_MIN?" ok":""}">${val.trim().length}자</span>`;
   slot.appendChild(d);
+  const rta = d.querySelector("textarea"), rc = d.querySelector(".rc");
+  rta.addEventListener("input", ()=>{
+    REV[id] = rta.value; saveRev();
+    const n = rta.value.trim().length;
+    rc.textContent = `${n}자`;
+    rc.classList.toggle("ok", n >= ANS_MIN);
+    const meta = card.querySelector(".inq-meta");
+    let t = meta.querySelector(".tagx.rev");
+    if(n >= 5 && !t){
+      t = document.createElement("span"); t.className = "tagx rev"; t.textContent = "✏️ 다시 씀";
+      meta.insertBefore(t, meta.querySelector('[data-act="hint"]'));
+    }else if(n < 5 && t){ t.remove(); }
+  });
 }
 function doLock(){
   if(!lockTarget) return;
@@ -2649,12 +2693,14 @@ function doLock(){
   card.querySelector(".no").textContent = "🔒";
   const meta = card.querySelector(".inq-meta");
   if(!meta.querySelector(".tagx.lock")){
-    const t = document.createElement("span"); t.className = "tagx lock"; t.textContent = "🔒 모범 답안 열람 · 수정 잠김";
+    const t = document.createElement("span"); t.className = "tagx lock"; t.textContent = "🔒 처음 답안 잠김";
     meta.insertBefore(t, meta.querySelector('[data-act="hint"]'));
   }
   showAns(card, it);
   lockTarget = null;
-  toast("모범 답안을 열었어요. 이 문항의 답안은 그대로 남겨 두었습니다");
+  toast("모범 답안을 열었어요. 아래 ‘다시 쓰기’ 칸에 새로 정리해 보세요");
+  const rta = card.querySelector(".panel-rev textarea");
+  if(rta) setTimeout(()=>rta.focus(), 120);
 }
 function paintInqCount(){
   const n = INQ.filter(x=>inqDone(x.id)).length;
@@ -2840,14 +2886,9 @@ function openM(sel){ $(sel).classList.add("open"); }
 function closeM(sel){ $(sel).classList.remove("open"); }
 function askStu(next){
   stuNext = next;
-  ["grade","cls","no","name"].forEach(k=>{
-    const el = $("#s" + k[0].toUpperCase() + k.slice(1));
-    if(el) el.value = STU[k] || "";
-  });
-  $("#sGrade").value = STU.grade; $("#sCls").value = STU.cls;
-  $("#sNo").value = STU.no; $("#sName").value = STU.name;
+  $("#sSid").value = STU.sid; $("#sName").value = STU.name;
   openM("#mStu");
-  setTimeout(()=>$(STU.name ? "#stuGo" : "#sGrade").focus(), 80);
+  setTimeout(()=>$(stuLabel() ? "#stuGo" : "#sSid").focus(), 80);
 }
 function openReport(){ askStu("report"); }
 
@@ -2863,7 +2904,8 @@ function buildPrint(){
 
   h += `<h1>${blank ? "원자의 구조 학습지" : "원자의 구조 학습 리포트"}</h1>
     <div class="phead">
-      <span><b>학번</b> ${blank && !stuLabel() ? "____________" : esc(stuLabel() || "____________")}</span>
+      <span><b>학번</b> ${esc(STU.sid || "__________")}</span>
+      <span><b>이름</b> ${esc(STU.name || "__________")}</span>
       <span><b>날짜</b> ${todayKo()}</span>
       <span><b>단원</b> 중학교 과학 Ⅳ. 물질의 구성</span>
       <span><b>성취기준</b> [9과11-02] [9과11-03] [9과11-04]</span>
@@ -2880,19 +2922,22 @@ function buildPrint(){
   if($("#ckInq").checked){
     h += H("탐구 질문 — 서술형");
     INQ.forEach((it,i)=>{
-      const val = (ANS[it.id] || "").trim();
+      const val = (ANS[it.id] || "").trim(), rev = (REV[it.id] || "").trim();
       const tags = [];
       if(!blank){
         tags.push(LOCK[it.id] ? "모범 답안 열람함" : (val ? "열람 전 스스로 작성" : "미작성"));
         if(HINT[it.id]) tags.push("힌트 봄");
+        if(rev) tags.push("모범 답안 보고 다시 씀");
       }
       h += `<div class="pq">
         <div class="t">${i+1}. ${esc(it.q)} <span style="font-size:8.5pt;font-weight:700">${it.std}</span></div>
         ${tags.length ? `<div class="tags">${tags.join(" · ")}</div>` : ""}
-        <div class="lbl">내가 쓴 답안</div>
+        <div class="lbl">${blank ? "내가 쓴 답안" : (rev ? "처음 쓴 답안" : "내가 쓴 답안")}</div>
         ${blank ? '<div class="lines"></div><div class="lines"></div><div class="lines"></div><div class="lines"></div><div class="lines"></div>'
                 : `<div class="box">${esc(val) || "(작성하지 않았습니다)"}</div>`}
         ${withAns ? `<div class="lbl">모범 답안</div><div class="box">${it.a.replace(/<[^>]*>/g,"")}</div>` : ""}
+        ${blank ? '<div class="lbl">모범 답안을 보고 다시 쓴 답안</div><div class="lines"></div><div class="lines"></div><div class="lines"></div>'
+                : (rev ? `<div class="lbl">모범 답안을 보고 다시 쓴 답안</div><div class="box rev">${esc(rev)}</div>` : "")}
       </div>`;
     });
   }
@@ -3140,8 +3185,8 @@ function wire(){
 
   /* 학번·이름 확인 → 저장 진행 */
   $("#stuGo").onclick = ()=>{
-    STU.grade = $("#sGrade").value.trim(); STU.cls = $("#sCls").value.trim();
-    STU.no = $("#sNo").value.trim();       STU.name = $("#sName").value.trim();
+    STU.sid = $("#sSid").value.trim(); STU.name = $("#sName").value.trim();
+    if(!STU.sid){  $("#sSid").focus();  toast("학번을 입력해 주세요", "bad"); return; }
     if(!STU.name){ $("#sName").focus(); toast("이름을 입력해 주세요", "bad"); return; }
     LS.set("stu", STU);
     closeM("#mStu");
@@ -3158,7 +3203,7 @@ function wire(){
       openM("#mRep");
     }
   };
-  ["#sGrade","#sCls","#sNo","#sName"].forEach((sel,i,arr)=>{
+  ["#sSid","#sName"].forEach((sel,i,arr)=>{
     $(sel).addEventListener("keydown", ev=>{
       if(ev.key !== "Enter") return;
       ev.preventDefault();
@@ -3227,7 +3272,7 @@ function wire(){
   /* 데이터 초기화 */
   $("#btnWipe").onclick = ()=>{
     if(!confirm("학번·이름, 서술형 답안과 잠금, 힌트 열람 기록, 퀴즈 기록, 설정이 모두 지워져요. 계속할까요?")) return;
-    ["ans","lock","hint","quiz","stu","done","theme","sfx"].forEach(k=>LS.del(k));
+    ["ans","rev","lock","hint","quiz","stu","done","theme","sfx"].forEach(k=>LS.del(k));
     location.reload();
   };
 
@@ -3287,6 +3332,13 @@ function setPlay(on){
    ===================================================================== */
 function init(){
   Object.assign(STU, LS.get("stu", STU));
+  /* v9 이전 저장본은 학년·반·번호로 나뉘어 있었다 — 학번 한 칸으로 옮긴다 */
+  if(!STU.sid && STU.grade && STU.cls && STU.no)
+    STU.sid = `${STU.grade}${String(STU.cls).padStart(2,"0")}${String(STU.no).padStart(2,"0")}`;
+  if("grade" in STU || "cls" in STU || "no" in STU){
+    delete STU.grade; delete STU.cls; delete STU.no;
+    LS.set("stu", STU);
+  }
   const s = LS.get("sfx", null);
   if(s){ SFX.on = !!s.on; SFX.vol = typeof s.vol === "number" ? s.vol : .6; }
   ST.done = LS.get("done", {});
